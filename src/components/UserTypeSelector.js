@@ -23,12 +23,14 @@ import {
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
+import CommunitySelector from './CommunitySelector';
 
 const UserTypeSelector = ({ open, onComplete }) => {
-  const { user } = useAuth();
+  const { user, refreshUserProfile } = useAuth();
   const [selectedType, setSelectedType] = useState('both');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showCommunitySelector, setShowCommunitySelector] = useState(false);
 
   const userTypes = [
     {
@@ -96,10 +98,11 @@ const UserTypeSelector = ({ open, onComplete }) => {
         availability: selectedType === 'resident' ? 'not-applicable' : 'available',
         joinedAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        onboardingCompleted: true
+        onboardingCompleted: false // Will be set to true after community selection
       });
 
-      onComplete(selectedType);
+      // Show community selector
+      setShowCommunitySelector(true);
     } catch (err) {
       console.error('Error setting user type:', err);
       setError('Failed to save your selection. Please try again.');
@@ -108,7 +111,42 @@ const UserTypeSelector = ({ open, onComplete }) => {
     }
   };
 
+  const handleCommunitySelected = async (result) => {
+    try {
+      if (result.pending) {
+        // User submitted a join request - mark onboarding as complete but no community yet
+        const userRef = doc(db, 'users', user.uid);
+        await setDoc(userRef, {
+          onboardingCompleted: true,
+          pendingCommunity: result.community.id
+        }, { merge: true });
+
+        // Refresh user profile in context
+        if (refreshUserProfile) {
+          await refreshUserProfile();
+        }
+
+        onComplete(selectedType);
+      } else {
+        // Direct assignment (old flow - shouldn't happen with new system)
+        const userRef = doc(db, 'users', user.uid);
+        await setDoc(userRef, {
+          onboardingCompleted: true
+        }, { merge: true });
+
+        if (refreshUserProfile) {
+          await refreshUserProfile();
+        }
+
+        onComplete(selectedType);
+      }
+    } catch (err) {
+      console.error('Error completing onboarding:', err);
+    }
+  };
+
   return (
+    <>
     <Dialog 
       open={open} 
       maxWidth="md" 
@@ -216,6 +254,18 @@ const UserTypeSelector = ({ open, onComplete }) => {
         </Button>
       </DialogActions>
     </Dialog>
+    
+    {/* Community Selector - shown after user type selection */}
+    {showCommunitySelector && (
+      <CommunitySelector
+        open={showCommunitySelector}
+        userId={user.uid}
+        userName={user.displayName || user.email?.split('@')[0] || 'User'}
+        userEmail={user.email}
+        onComplete={handleCommunitySelected}
+      />
+    )}
+    </>
   );
 };
 

@@ -26,7 +26,8 @@ export const MESSAGES = {
 export const COLLECTIONS = {
   USERS: 'users',
   REQUESTS: 'requests',
-  RESPONSES: 'responses'
+  RESPONSES: 'responses',
+  COMMUNITIES: 'communities'
 };
 
 // Request Status

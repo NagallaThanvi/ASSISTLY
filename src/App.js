@@ -1,8 +1,8 @@
 import React from 'react';
 import { Routes, Route, Navigate, Link } from 'react-router-dom';
-import { Box, CssBaseline, AppBar, Toolbar, Typography, Button, Container, TextField, InputAdornment, MenuItem, Stack, ToggleButtonGroup, ToggleButton, IconButton, ThemeProvider, createTheme } from '@mui/material';
-import { Search as SearchIcon, FilterList as FilterIcon, VolunteerActivism as VolunteerIcon, Home as HomeIcon, Favorite as FavoriteIcon, Handshake as HandshakeIcon, Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon, Map as MapIcon, ViewList as ListIcon } from '@mui/icons-material';
-import { collection, doc, query, orderBy, onSnapshot, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+import { Box, CssBaseline, AppBar, Toolbar, Typography, Button, Container, ToggleButtonGroup, ToggleButton, IconButton, ThemeProvider, createTheme } from '@mui/material';
+import { VolunteerActivism as VolunteerIcon, Home as HomeIcon, Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon, Map as MapIcon, ViewList as ListIcon, Handshake as HandshakeIcon, Favorite as FavoriteIcon } from '@mui/icons-material';
+import { collection, doc, query, where, orderBy, onSnapshot, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from './firebase';
 import { useApp } from './context/AppContext';
@@ -10,6 +10,7 @@ import { ROUTES, MESSAGES } from './utils/constants';
 import { useAuth } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
+import { awardPointsForCompletion, trackEarlyClaim } from './utils/gamification';
 
 // Components
 import Login from './components/Login';
@@ -25,6 +26,17 @@ import UserProfile from './components/UserProfile';
 import NotificationCenter from './components/NotificationCenter';
 import AdvancedSearch from './components/AdvancedSearch';
 import MapView from './components/MapView';
+import CommunityBadge from './components/CommunityBadge';
+import CommunityAdminDashboard from './components/CommunityAdminDashboard';
+import PendingJoinRequest from './components/PendingJoinRequest';
+import AdminLogin from './components/AdminLogin';
+import AdminSignup from './components/AdminSignup';
+import CreateCommunityPage from './pages/CreateCommunityPage';
+import CommunityListPage from './pages/CommunityListPage';
+import CommunityPage from './pages/CommunityPage';
+import AdminPage from './pages/AdminPage';
+import Chatbot from './components/Chatbot';
+import DatabaseInitializer from './components/DatabaseInitializer';
 
 // Meta tags setup
 document.title = process.env.REACT_APP_NAME || 'Assistly';
@@ -35,7 +47,7 @@ if (metaDescription) {
 
 // Protected Route Component
 const ProtectedRoute = React.memo(({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, communityId, userProfile, loading } = useAuth();
   
   if (loading) {
     return <LoadingSpinner fullScreen />;
@@ -45,11 +57,16 @@ const ProtectedRoute = React.memo(({ children }) => {
     return <Navigate to={ROUTES.LOGIN} />;
   }
   
+  // If user has completed onboarding but has no community, show pending request screen
+  if (userProfile?.onboardingCompleted && !communityId) {
+    return <PendingJoinRequest />;
+  }
+  
   return children;
 });
 
 function App() {
-  const { user, loading } = useAuth();
+  const { user, communityId, userProfile, loading } = useAuth();
   const { showNotification } = useApp();
   const [requests, setRequests] = React.useState([]);
   const [filteredRequests, setFilteredRequests] = React.useState([]);
@@ -63,6 +80,7 @@ function App() {
   const [openChatRequest, setOpenChatRequest] = React.useState(null);
   const [darkMode, setDarkMode] = React.useState(false);
   const [viewMode, setViewMode] = React.useState('list'); // 'list' or 'map'
+  const [showDbInitializer, setShowDbInitializer] = React.useState(false);
 
   // Create theme based on dark mode
   const theme = React.useMemo(
@@ -94,16 +112,44 @@ function App() {
     }
   }, []);
 
-  const categories = ['all', 'General Help', 'Groceries & Shopping', 'Medical Assistance', 'Transportation', 'Housework & Cleaning', 'Pet Care', 'Childcare', 'Technology Help', 'Yard Work', 'Moving & Delivery', 'Companionship', 'Other'];
-  const urgencies = ['all', 'low', 'medium', 'high'];
-  const statuses = ['all', 'open', 'claimed', 'pending_completion', 'completed'];
-  const sortOptions = [
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-    { value: 'urgency-high', label: 'Urgency: High to Low' },
-    { value: 'urgency-low', label: 'Urgency: Low to High' },
-    { value: 'title', label: 'Title (A-Z)' }
-  ];
+  // Seed communities on first load
+  React.useEffect(() => {
+    const initializeCommunities = async () => {
+      try {
+        const { seedDefaultCommunities } = await import('./utils/seedCommunities');
+        await seedDefaultCommunities();
+      } catch (error) {
+        console.error('Error initializing communities:', error);
+      }
+    };
+    
+    initializeCommunities();
+  }, []);
+
+  // Initialize trust score scheduler
+  React.useEffect(() => {
+    if (communityId) {
+      const initScheduler = async () => {
+        try {
+          const { initializeTrustScoreScheduler, updateOutdatedTrustScores } = await import('./utils/trustScoreScheduler');
+          
+          // Update outdated scores on app load
+          await updateOutdatedTrustScores(communityId);
+          
+          // Initialize daily scheduler
+          initializeTrustScoreScheduler(communityId);
+          
+          console.log('Trust score scheduler initialized');
+        } catch (error) {
+          console.error('Error initializing trust score scheduler:', error);
+        }
+      };
+      
+      initScheduler();
+    }
+  }, [communityId]);
+
+  // Filter options are defined in AdvancedSearch component
 
   const handleLogout = async () => {
     try {
@@ -116,10 +162,11 @@ function App() {
 
   // Fetch requests from Firestore
   React.useEffect(() => {
-    if (!user) return;
+    if (!user || !communityId) return;
 
     const q = query(
       collection(db, 'requests'),
+      where('communityId', '==', communityId),
       orderBy('createdAt', 'desc')
     );
 
@@ -133,7 +180,7 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, communityId]);
 
   // Filter, search, and sort requests
   React.useEffect(() => {
@@ -195,14 +242,6 @@ function App() {
     setFilteredRequests(filtered);
   }, [requests, searchTerm, filterCategory, filterUrgency, filterStatus, sortBy, currentMode, user]);
 
-  const clearFilters = () => {
-    setSearchTerm('');
-    setFilterCategory('all');
-    setFilterUrgency('all');
-    setFilterStatus('all');
-    setSortBy('newest');
-  };
-
   const activeFiltersCount = [filterCategory, filterUrgency, filterStatus].filter(f => f !== 'all').length;
 
   const handleModeChange = (event, newMode) => {
@@ -233,10 +272,13 @@ function App() {
 
     try {
       const requestRef = doc(db, 'requests', requestId);
+      const request = requests.find(req => req.id === requestId);
+      
       await updateDoc(requestRef, {
         status: 'claimed',
         claimedByUid: user.uid,
         claimedBy: user.email,
+        claimedAt: serverTimestamp(),
         history: arrayUnion({ 
           type: 'claimed',
           by: user.email,
@@ -245,8 +287,12 @@ function App() {
         })
       });
       
+      // Track early claim for gamification
+      if (request?.createdAt) {
+        await trackEarlyClaim(user.uid, request.createdAt);
+      }
+      
       // Get the request details to open chat
-      const request = requests.find(req => req.id === requestId);
       if (request) {
         setOpenChatRequest(request);
       }
@@ -296,6 +342,7 @@ function App() {
     if (!user) return;
     try {
       const requestRef = doc(db, 'requests', requestId);
+      const request = requests.find(req => req.id === requestId);
       
       if (approved) {
         await updateDoc(requestRef, {
@@ -310,6 +357,41 @@ function App() {
             at: new Date().toISOString() 
           })
         });
+        
+        // Award points to volunteer for completing the request
+        if (request?.claimedByUid) {
+          try {
+            const claimTime = request.claimedAt?.toMillis ? request.claimedAt.toMillis() : Date.now();
+            const completionTime = Date.now() - claimTime;
+            
+            const reward = await awardPointsForCompletion(
+              request.claimedByUid,
+              request,
+              completionTime
+            );
+            
+            // Show achievement notification if any
+            if (reward.newAchievements && reward.newAchievements.length > 0) {
+              const achievementNames = reward.newAchievements.map(a => a.name).join(', ');
+              showNotification(
+                `🎉 New Achievement${reward.newAchievements.length > 1 ? 's' : ''}: ${achievementNames}!`,
+                'success'
+              );
+            }
+            
+            // Show level up notification
+            if (reward.leveledUp) {
+              showNotification(
+                `🎊 Level Up! You're now a ${reward.newLevel.name} ${reward.newLevel.badge}!`,
+                'success'
+              );
+            }
+          } catch (gamificationError) {
+            console.error('Error awarding points:', gamificationError);
+            // Don't fail the whole operation if gamification fails
+          }
+        }
+        
         showNotification('Request verified as completed! You can now rate the volunteer.');
       } else {
         await updateDoc(requestRef, {
@@ -324,6 +406,7 @@ function App() {
         showNotification('Completion rejected. Request reopened.');
       }
     } catch (error) {
+      console.error('Error verifying completion:', error);
       showNotification('Error verifying completion. Please try again.', 'error');
     }
   };
@@ -357,6 +440,7 @@ function App() {
             </Box>
             {user ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <CommunityBadge />
                 <Button color="inherit" component={Link} to={ROUTES.HOME}>
                   Requests
                 </Button>
@@ -366,6 +450,42 @@ function App() {
                 <Button color="inherit" component={Link} to="/profile">
                   Profile
                 </Button>
+                <Button color="inherit" component={Link} to="/communities">
+                  Communities
+                </Button>
+                
+                {/* Database Setup Button - Show for all users initially */}
+                <Button 
+                  color="inherit" 
+                  onClick={() => setShowDbInitializer(true)}
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.15)',
+                    fontSize: '0.85rem',
+                    '&:hover': {
+                      bgcolor: 'rgba(255,255,255,0.25)',
+                    }
+                  }}
+                >
+                  🔧 Setup
+                </Button>
+
+                {/* Admin Button - Show only for admins */}
+                {userProfile?.role && (userProfile.role === 'super_admin' || userProfile.role === 'community_admin' || userProfile.role === 'moderator') && (
+                  <Button 
+                    color="inherit" 
+                    component={Link} 
+                    to="/admin"
+                    sx={{
+                      bgcolor: 'rgba(255,255,255,0.2)',
+                      fontWeight: 700,
+                      '&:hover': {
+                        bgcolor: 'rgba(255,255,255,0.3)',
+                      }
+                    }}
+                  >
+                    👑 Admin
+                  </Button>
+                )}
                 
                 {/* Mode Toggle */}
                 <ToggleButtonGroup
@@ -436,6 +556,8 @@ function App() {
 
         <Routes>
           <Route path={ROUTES.LOGIN} element={<Login />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin-signup" element={<AdminSignup />} />
           <Route path={ROUTES.SIGNUP} element={<SignUp />} />
           <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />} />
           <Route path={ROUTES.TERMS} element={<TermsOfService />} />
@@ -453,6 +575,46 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <CommunityAdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/communities"
+            element={
+              <ProtectedRoute>
+                <CommunityListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/create-community"
+            element={
+              <ProtectedRoute>
+                <CreateCommunityPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/community/:communityId"
+            element={
+              <ProtectedRoute>
+                <CommunityPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/:communityId"
+            element={
+              <ProtectedRoute>
+                <AdminPage />
               </ProtectedRoute>
             }
           />
@@ -625,6 +787,15 @@ function App() {
             otherUserEmail={openChatRequest.createdBy || openChatRequest.createdByEmail}
           />
         )}
+
+        {/* AI Chatbot - Available to all logged-in users */}
+        {user && <Chatbot />}
+
+        {/* Database Initializer Dialog */}
+        <DatabaseInitializer 
+          open={showDbInitializer} 
+          onClose={() => setShowDbInitializer(false)} 
+        />
         </Box>
       </ErrorBoundary>
     </ThemeProvider>

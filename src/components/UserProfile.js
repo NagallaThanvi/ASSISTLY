@@ -35,7 +35,8 @@ import {
   Star as StarIcon,
   EmojiEvents as TrophyIcon,
   Verified as VerifiedIcon,
-  CheckCircle as CheckCircleIcon
+  CheckCircle as CheckCircleIcon,
+  Shield as ShieldIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
@@ -43,6 +44,7 @@ import { db } from '../firebase';
 import { doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import ProfileEditor from './ProfileEditor';
 import { formatDate } from '../utils/helpers';
+import { getTrustScoreColor, calculateTrustScore } from '../utils/trustScore';
 
 function TabPanel({ children, value, index }) {
   return (
@@ -67,13 +69,46 @@ const UserProfile = () => {
     totalRatings: 0,
     badges: []
   });
+  const [trustScore, setTrustScore] = useState(null);
 
   useEffect(() => {
     if (user) {
       loadProfile();
       loadStats();
+      loadTrustScore();
     }
   }, [user]);
+
+  const loadTrustScore = async () => {
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userRef);
+      const userData = userDoc.data();
+      
+      // Check if trust score exists and is recent (within 24 hours)
+      const trustUpdatedAt = userData?.trustUpdatedAt?.toDate();
+      const now = new Date();
+      const hoursSinceUpdate = trustUpdatedAt ? (now - trustUpdatedAt) / (1000 * 60 * 60) : Infinity;
+      
+      if (userData?.trustScore && hoursSinceUpdate < 24) {
+        // Use cached trust score
+        setTrustScore({
+          score: userData.trustScore,
+          level: userData.trustLevel,
+          badge: userData.trustBadge
+        });
+      } else {
+        // Calculate fresh trust score
+        const communityId = Object.keys(userData?.communities || {})[0];
+        if (communityId) {
+          const trustData = await calculateTrustScore(user.uid, communityId);
+          setTrustScore(trustData);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading trust score:', error);
+    }
+  };
 
   const loadProfile = async () => {
     try {
@@ -246,31 +281,11 @@ const UserProfile = () => {
               )}
             </Box>
             
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <EmailIcon fontSize="small" color="action" />
-                <Typography variant="body2" color="text.secondary">
-                  {user.email}
-                </Typography>
-              </Box>
-              
-              {profileData?.location && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <LocationIcon fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.secondary">
-                    {profileData.location}
-                  </Typography>
-                </Box>
-              )}
-              
-              {user.metadata?.creationTime && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <CalendarIcon fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.secondary">
-                    Joined {new Date(user.metadata.creationTime).toLocaleDateString()}
-                  </Typography>
-                </Box>
-              )}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <CalendarIcon fontSize="small" color="action" />
+              <Typography variant="body2" color="text.secondary">
+                Joined {new Date(user.metadata.creationTime).toLocaleDateString()}
+              </Typography>
             </Box>
 
             {profileData?.bio && (

@@ -5,46 +5,70 @@ service cloud.firestore {
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
+    function isMemberOfCommunity(communityId) {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.communities[communityId] in ['admin', 'member'];
+    }
+
+    function isAdminOfCommunity(communityId) {
+      return get(/databases/$(database)/documents/communities/$(communityId)).data.admin == request.auth.uid;
+    }
+
+    function isSuperAdminOrCommunityAdmin() {
+      let userData = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return userData.role in ['super_admin', 'community_admin'];
+    }
+
+    // Communities collection
+    match /communities/{communityId} {
+      allow read: if isAuthenticated();
+      // Only super_admin and community_admin can create communities
+      allow create: if isAuthenticated() && isSuperAdminOrCommunityAdmin();
+      allow update, delete: if isAuthenticated() && resource.data.admin == request.auth.uid;
+    }
+
+    // MembershipRequests collection
+    match /membershipRequests/{requestId} {
+      allow create: if isAuthenticated() && 
+                     exists(/databases/$(database)/documents/communities/$(request.resource.data.communityId)) &&
+                     request.resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && 
+                   (request.auth.uid == resource.data.userId || 
+                    isAdminOfCommunity(resource.data.communityId));
+      allow update: if isAuthenticated() && isAdminOfCommunity(resource.data.communityId);
+    }
+
     // Requests collection
     match /requests/{requestId} {
-      // Anyone authenticated can read requests
-      allow read: if isAuthenticated();
-      
-      // Anyone authenticated can create a request
-      allow create: if isAuthenticated()
-        && request.resource.data.createdByUid == request.auth.uid;
-      
-      // Can update if you're the owner OR if you're claiming/completing it
-      allow update: if isAuthenticated() 
-        && (isOwner(resource.data.createdByUid) 
-            || request.resource.data.claimedByUid == request.auth.uid
-            || resource.data.claimedByUid == request.auth.uid);
-      
-      // Can delete if you're the owner and it's still open
-      allow delete: if isAuthenticated() 
-        && isOwner(resource.data.createdByUid)
-        && resource.data.status == 'open';
+      allow read: if isAuthenticated() && isMemberOfCommunity(resource.data.communityId);
+      allow create: if isAuthenticated() && 
+                     request.resource.data.createdByUid == request.auth.uid &&
+                     isMemberOfCommunity(request.resource.data.communityId);
+      allow update: if isAuthenticated() && 
+                     isMemberOfCommunity(resource.data.communityId) &&
+                     (isOwner(resource.data.createdByUid) || 
+                      request.resource.data.claimedByUid == request.auth.uid ||
+                      resource.data.claimedByUid == request.auth.uid);
+      allow delete: if isAuthenticated() && 
+                     isMemberOfCommunity(resource.data.communityId) &&
+                     isOwner(resource.data.createdByUid) &&
+                     resource.data.status == 'open';
     }
 
     // User profiles
     match /users/{userId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && isOwner(userId);
       allow write: if isAuthenticated() && isOwner(userId);
     }
 
     // Messages collection
     match /messages/{messageId} {
-      // Allow reading if you're the sender or receiver
       allow read: if isAuthenticated();
-      
-      // Allow creating if you're the sender
-      allow create: if isAuthenticated()
-        && request.resource.data.senderId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.senderId == request.auth.uid;
     }
   }
 }

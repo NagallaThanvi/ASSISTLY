@@ -336,6 +336,38 @@ const Login = () => {
           </Typography>
         </Box>
 
+        {/* Admin Login Link */}
+        <Divider sx={{ my: 2 }}>
+          <Typography variant="caption" color="text.secondary">
+            OR
+          </Typography>
+        </Divider>
+        
+        <Box sx={{ textAlign: 'center' }}>
+          <Button
+            component={RouterLink}
+            to="/admin-login"
+            variant="outlined"
+            color="secondary"
+            fullWidth
+            sx={{
+              py: 1.5,
+              borderWidth: 2,
+              fontWeight: 600,
+              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+              '&:hover': {
+                borderWidth: 2,
+                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+              }
+            }}
+          >
+            🔐 Admin Login
+          </Button>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+            For administrators and moderators only
+          </Typography>
+        </Box>
+
         {/* Terms and Privacy */}
         <Box sx={{ mt: 3, textAlign: 'center' }}>
           <Typography variant="caption" color="textSecondary">
