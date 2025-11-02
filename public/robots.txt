@@ -1,0 +1,10 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin-login
+Disallow: /admin-signup
+Disallow: /profile
+
+# Sitemap
+Sitemap: https://your-domain.com/sitemap.xml
