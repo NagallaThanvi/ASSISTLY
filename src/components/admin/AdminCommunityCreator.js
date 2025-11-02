@@ -30,7 +30,6 @@ import {
 import { 
   collection, 
   addDoc, 
-  getDocs, 
   doc, 
   updateDoc, 
   deleteDoc,
@@ -58,18 +57,33 @@ const AdminCommunityCreator = () => {
 
   useEffect(() => {
     loadCommunities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadCommunities = async () => {
     try {
       setLoading(true);
-      const communitiesRef = collection(db, COLLECTIONS.COMMUNITIES);
-      const snapshot = await getDocs(communitiesRef);
-      const communitiesList = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setCommunities(communitiesList);
+      
+      // Get user's profile to find their community
+      const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, user.uid));
+      const userCommunityId = userDoc.data()?.communityId;
+      
+      if (!userCommunityId) {
+        setCommunities([]);
+        setLoading(false);
+        return;
+      }
+      
+      // Load ONLY the admin's own community
+      const communityDoc = await getDoc(doc(db, COLLECTIONS.COMMUNITIES, userCommunityId));
+      if (communityDoc.exists()) {
+        setCommunities([{
+          id: communityDoc.id,
+          ...communityDoc.data()
+        }]);
+      } else {
+        setCommunities([]);
+      }
     } catch (error) {
       console.error('Error loading communities:', error);
       showNotification('Error loading communities', 'error');
@@ -205,10 +219,10 @@ const AdminCommunityCreator = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h5" fontWeight="bold">
-            Manage Communities
+            My Community
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Create and manage communities for your platform
+            Manage your community settings and information
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
@@ -219,23 +233,16 @@ const AdminCommunityCreator = () => {
           >
             Refresh
           </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
-          >
-            Create Community
-          </Button>
         </Box>
       </Box>
 
-      <Alert severity="info" sx={{ mb: 3 }}>
-        <Typography variant="body2">
-          <strong>Total Communities:</strong> {communities.length} | 
-          <strong> Active:</strong> {communities.filter(c => c.active).length} | 
-          <strong> Inactive:</strong> {communities.filter(c => !c.active).length}
-        </Typography>
-      </Alert>
+      {communities.length > 0 && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Typography variant="body2">
+            You are managing your community: <strong>{communities[0]?.name}</strong>
+          </Typography>
+        </Alert>
+      )}
 
       <Grid container spacing={3}>
         {communities.map((community) => (

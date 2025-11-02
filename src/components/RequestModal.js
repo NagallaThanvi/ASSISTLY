@@ -188,25 +188,28 @@ const RequestModal = ({ onClose }) => {
     };
     
     // Validate title
-    if (!formData.title.trim()) {
+    const title = formData.title || '';
+    if (!title.trim()) {
       newErrors.title = 'Title is required';
-    } else if (formData.title.trim().length < 5) {
+    } else if (title.trim().length < 5) {
       newErrors.title = 'Title must be at least 5 characters';
-    } else if (formData.title.trim().length > 100) {
+    } else if (title.trim().length > 100) {
       newErrors.title = 'Title must not exceed 100 characters';
     }
     
     // Validate description
-    if (!formData.description.trim()) {
+    const description = formData.description || '';
+    if (!description.trim()) {
       newErrors.description = 'Description is required';
-    } else if (formData.description.trim().length < 20) {
+    } else if (description.trim().length < 20) {
       newErrors.description = 'Description must be at least 20 characters';
-    } else if (formData.description.trim().length > 1000) {
+    } else if (description.trim().length > 1000) {
       newErrors.description = 'Description must not exceed 1000 characters';
     }
     
     // Validate location
-    if (!formData.location.trim() && !mapPosition) {
+    const location = formData.location || '';
+    if (!location.trim() && !mapPosition) {
       newErrors.location = 'Please provide a location or use the map';
     }
     
@@ -241,14 +244,14 @@ const RequestModal = ({ onClose }) => {
       // Ensure we have a display name
       const displayName = user.displayName || user.email?.split('@')[0] || 'Anonymous';
       
-      // Sanitize all form data
+      // Sanitize all form data (with safety checks)
       const sanitizedData = {
-        title: sanitizeInput(formData.title.trim()),
-        description: sanitizeInput(formData.description.trim()),
-        category: formData.category,
-        urgency: formData.urgency,
-        contactInfo: sanitizeInput(formData.contactInfo.trim()),
-        estimatedTime: sanitizeInput(formData.estimatedTime.trim())
+        title: sanitizeInput((formData.title || '').trim()),
+        description: sanitizeInput((formData.description || '').trim()),
+        category: formData.category || 'General Help',
+        urgency: formData.urgency || 'medium',
+        contactInfo: sanitizeInput((formData.contactInfo || '').trim()),
+        estimatedTime: sanitizeInput((formData.estimatedTime || '').trim())
       };
       
       const requestData = {
@@ -271,18 +274,19 @@ const RequestModal = ({ onClose }) => {
       };
 
       // Add location coordinates if map position is set
+      const locationText = (formData.location || '').trim();
       if (mapPosition) {
         const validCoords = sanitizeCoordinates(mapPosition.lat, mapPosition.lng);
         if (validCoords) {
           requestData.location = {
             coordinates: validCoords,
-            address: sanitizeInput(formData.location.trim())
+            address: sanitizeInput(locationText)
           };
         }
-      } else if (formData.location.trim()) {
+      } else if (locationText) {
         // Just text location without coordinates
         requestData.location = {
-          address: sanitizeInput(formData.location.trim())
+          address: sanitizeInput(locationText)
         };
       }
 

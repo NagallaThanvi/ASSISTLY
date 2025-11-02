@@ -18,7 +18,7 @@ import {
   Send as SendIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
-import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, or } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/helpers';
@@ -41,6 +41,8 @@ const MessageThread = ({ open, onClose, requestId, requestTitle, otherUserId, ot
       return;
     }
 
+    // Query messages for this request
+    // Simple query to avoid composite index requirements
     const q = query(
       collection(db, 'messages'),
       where('requestId', '==', requestId)
@@ -53,17 +55,11 @@ const MessageThread = ({ open, onClose, requestId, requestTitle, otherUserId, ot
           ...doc.data()
         }));
         
-        // Filter messages between these two users and sort by timestamp
-        const filteredMessages = messagesData
-          .filter(msg => 
-            (msg.senderId === user.uid && msg.receiverId === otherUserId) ||
-            (msg.senderId === otherUserId && msg.receiverId === user.uid)
-          )
-          .sort((a, b) => {
-            const timeA = a.createdAt?.toMillis?.() || 0;
-            const timeB = b.createdAt?.toMillis?.() || 0;
-            return timeA - timeB;
-          });
+        // Filter to only messages between these two specific users
+        const filteredMessages = messagesData.filter(msg => 
+          (msg.senderId === user.uid && msg.receiverId === otherUserId) ||
+          (msg.senderId === otherUserId && msg.receiverId === user.uid)
+        );
         
         setMessages(filteredMessages);
         setLoading(false);
@@ -71,6 +67,7 @@ const MessageThread = ({ open, onClose, requestId, requestTitle, otherUserId, ot
       },
       (error) => {
         console.error('Error loading messages:', error);
+        console.error('Error code:', error.code);
         setMessages([]);
         setLoading(false);
       }

@@ -133,19 +133,30 @@ export const getUserJoinRequest = async (userId, communityId) => {
  */
 export const approveJoinRequest = async (requestId, adminId) => {
   try {
-    const requestRef = doc(db, 'membershipRequests', requestId);
+    console.log('Starting approval for request:', requestId);
+    
+    const requestRef = doc(db, 'join_requests', requestId);
     const requestDoc = await getDoc(requestRef);
     
     if (!requestDoc.exists()) {
+      console.error('Join request not found:', requestId);
       throw new Error('Join request not found');
     }
     
     const requestData = requestDoc.data();
+    console.log('Found request data:', requestData);
     
     // Update user's community - NEW STRUCTURE
+    console.log('Updating user:', requestData.userId);
     const userRef = doc(db, COLLECTIONS.USERS, requestData.userId);
     const userDoc = await getDoc(userRef);
-    const userData = userDoc.exists() ? userDoc.data() : {};
+    
+    if (!userDoc.exists()) {
+      console.error('User not found:', requestData.userId);
+      throw new Error('User not found');
+    }
+    
+    const userData = userDoc.data();
     const communities = userData.communities || {};
     
     // Add community with member role
@@ -158,16 +169,20 @@ export const approveJoinRequest = async (requestId, adminId) => {
       onboardingCompleted: true,
       updatedAt: serverTimestamp()
     });
+    console.log('User updated successfully');
     
     // Update join request status
+    console.log('Updating join request status');
     await updateDoc(requestRef, {
       status: 'approved',
       approvedBy: adminId,
       approvedAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });
+    console.log('Join request updated successfully');
     
     // Increment community member count
+    console.log('Updating community member count');
     const communityRef = doc(db, COLLECTIONS.COMMUNITIES, requestData.communityId);
     const communityDoc = await getDoc(communityRef);
     if (communityDoc.exists()) {
@@ -176,20 +191,29 @@ export const approveJoinRequest = async (requestId, adminId) => {
         memberCount: currentCount + 1,
         updatedAt: serverTimestamp()
       });
+      console.log('Community member count updated');
     }
     
-    // Log admin action
-    await logAdminAction({
-      action: 'JOIN_REQUEST_APPROVED',
-      requestId: requestId,
-      userId: requestData.userId,
-      communityId: requestData.communityId,
-      performedBy: adminId
-    });
+    // Log admin action (optional - don't fail if this errors)
+    try {
+      await logAdminAction({
+        action: 'JOIN_REQUEST_APPROVED',
+        requestId: requestId,
+        userId: requestData.userId,
+        communityId: requestData.communityId,
+        performedBy: adminId
+      });
+      console.log('Admin action logged');
+    } catch (logError) {
+      console.warn('Could not log admin action:', logError);
+      // Don't fail the whole operation if logging fails
+    }
     
+    console.log('Approval completed successfully');
     return true;
   } catch (error) {
     console.error('Error approving join request:', error);
+    console.error('Error details:', error.message, error.code);
     throw error;
   }
 };

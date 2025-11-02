@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firestore Rules Test</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #1e1e1e; color: #fff; }
+    .success { color: #4CAF50; }
+    .error { color: #f44336; }
+    .warning { color: #ff9800; }
+    pre { background: #2d2d2d; padding: 10px; border-radius: 5px; }
+    button { background: #2196F3; color: white; border: none; padding: 10px 20px; margin: 10px 0; cursor: pointer; font-size: 16px; }
+    button:hover { background: #0b7dda; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Firestore Rules Diagnostic</h1>
+  <div id="output"></div>
+  <button onclick="runTest()">Run Test</button>
+
+  <script type="module">
+    import { auth, db } from './firebase.js';
+    import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    const output = document.getElementById('output');
+
+    window.runTest = async function() {
+      output.innerHTML = '<h2>Running tests...</h2>';
+      let html = '';
+
+      // Test 1: Check authentication
+      html += '<h3>Test 1: Authentication</h3>';
+      const user = auth.currentUser;
+      if (user) {
+        html += `<p class="success">✅ Logged in as: ${user.email}</p>`;
+        html += `<pre>User ID: ${user.uid}</pre>`;
+      } else {
+        html += '<p class="error">❌ NOT LOGGED IN</p>';
+        html += '<p class="warning">⚠️ Please login first, then run this test again.</p>';
+        output.innerHTML = html;
+        return;
+      }
+
+      // Test 2: Try to read communities
+      html += '<h3>Test 2: Read Communities Collection</h3>';
+      try {
+        const snapshot = await getDocs(collection(db, 'communities'));
+        html += `<p class="success">✅ SUCCESS! Found ${snapshot.size} communities</p>`;
+        snapshot.forEach(doc => {
+          html += `<pre>Community: ${doc.data().name}</pre>`;
+        });
+        html += '<p class="success"><strong>🎉 FIRESTORE RULES ARE WORKING!</strong></p>';
+      } catch (error) {
+        html += `<p class="error">❌ FAILED: ${error.code}</p>`;
+        html += `<pre>${error.message}</pre>`;
+        html += '<h3 class="error">⚠️ FIRESTORE RULES NOT DEPLOYED!</h3>';
+        html += '<p>Your rules file exists locally but is NOT on Firebase servers.</p>';
+        html += '<h4>Fix:</h4>';
+        html += '<ol>';
+        html += '<li>Go to <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a></li>';
+        html += '<li>Click your project → Firestore Database → Rules tab</li>';
+        html += '<li>Copy content from firestore.rules file</li>';
+        html += '<li>Paste in Firebase Console</li>';
+        html += '<li>Click PUBLISH button</li>';
+        html += '<li>Wait 2 minutes</li>';
+        html += '<li>Refresh this page and test again</li>';
+        html += '</ol>';
+      }
+
+      // Test 3: Check if user document exists
+      html += '<h3>Test 3: User Document</h3>';
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          html += '<p class="success">✅ User document exists</p>';
+          html += `<pre>${JSON.stringify(userDoc.data(), null, 2)}</pre>`;
+        } else {
+          html += '<p class="warning">⚠️ User document does not exist (OK for new users)</p>';
+        }
+      } catch (error) {
+        html += `<p class="error">❌ Cannot read user document: ${error.message}</p>`;
+      }
+
+      output.innerHTML = html;
+    };
+
+    // Auto-run on load if logged in
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('output').innerHTML = '<p>User detected. Click "Run Test" button.</p>';
+      } else {
+        document.getElementById('output').innerHTML = '<p class="error">❌ Not logged in. Please login to your app first.</p>';
+      }
+    });
+  </script>
+</body>
+</html>

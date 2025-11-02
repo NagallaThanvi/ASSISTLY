@@ -115,20 +115,34 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        if (!user) {
+          setLoading(false);
+          return;
+        }
+
+        console.log('Dashboard: Fetching data for user:', user.uid);
+
         // Get last 6 months for activity chart
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-        // Fetch user's requests
-        const requestsQuery = query(
-          collection(db, COLLECTIONS.REQUESTS),
-          where('createdByUid', '==', user.uid)
-        );
-        const requestsSnapshot = await getDocs(requestsQuery);
-        const requests = requestsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        // Fetch user's requests (with error handling)
+        let requests = [];
+        try {
+          const requestsQuery = query(
+            collection(db, COLLECTIONS.REQUESTS),
+            where('createdByUid', '==', user.uid)
+          );
+          const requestsSnapshot = await getDocs(requestsQuery);
+          requests = requestsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          console.log('Dashboard: Found', requests.length, 'requests');
+        } catch (reqError) {
+          console.warn('Dashboard: Could not fetch requests:', reqError.code);
+          // Continue with empty array
+        }
         setMyRequests(requests);
 
         // Calculate categories breakdown
@@ -139,15 +153,22 @@ const Dashboard = () => {
         }, {});
 
         // Fetch requests user has helped with (claimed by user)
-        const helpedQuery = query(
-          collection(db, COLLECTIONS.REQUESTS),
-          where('claimedByUid', '==', user.uid)
-        );
-        const helpedSnapshot = await getDocs(helpedQuery);
-        const helped = helpedSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        let helped = [];
+        try {
+          const helpedQuery = query(
+            collection(db, COLLECTIONS.REQUESTS),
+            where('claimedByUid', '==', user.uid)
+          );
+          const helpedSnapshot = await getDocs(helpedQuery);
+          helped = helpedSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          console.log('Dashboard: Found', helped.length, 'helped requests');
+        } catch (helpError) {
+          console.warn('Dashboard: Could not fetch helped requests:', helpError.code);
+          // Continue with empty array
+        }
         setHelpedRequests(helped);
 
         // Calculate response rate first
@@ -394,11 +415,20 @@ const Dashboard = () => {
           });
         }
 
-        // Get community totals
-        const communitySnapshot = await getDocs(collection(db, COLLECTIONS.REQUESTS));
-        const communityTotalRequests = communitySnapshot.size;
-        const communityTotalHelped = communitySnapshot.docs
-          .filter(doc => doc.data().helpedBy?.length > 0).length;
+        // Get community totals (with error handling)
+        let communityTotalRequests = 0;
+        let communityTotalHelped = 0;
+        try {
+          const communitySnapshot = await getDocs(collection(db, COLLECTIONS.REQUESTS));
+          communityTotalRequests = communitySnapshot.size;
+          communityTotalHelped = communitySnapshot.docs
+            .filter(doc => doc.data().helpedBy?.length > 0).length;
+        } catch (communityError) {
+          console.warn('Dashboard: Could not fetch community totals:', communityError.code);
+          // Use user's own stats as fallback
+          communityTotalRequests = requests.length;
+          communityTotalHelped = helped.length;
+        }
 
         // Prepare activity chart data
         const months = {};
@@ -414,10 +444,33 @@ const Dashboard = () => {
         });
 
         setAchievements(userAchievements);
+        setMyRequests(myRequests);
+        setHelpedRequests(helpedRequests);
+        setUserStats({
+          totalRequests: communityTotalRequests,
+          completedRequests: communityTotalHelped,
+          helpedOthers: helped.length,
+          impact: myRequests.length,
+          responseRate: requests.size >= 50 ? (helped.length / requests.size) * 100 : 0
+        });
 
       } catch (error) {
         console.error('Error fetching user data:', error);
-        showNotification('Error loading dashboard data', 'error');
+        // Only show error if it's not a permission issue for new users
+        if (error.code !== 'permission-denied') {
+          showNotification('Unable to load some dashboard data', 'warning');
+        }
+        // Set empty defaults so dashboard still works
+        setMyRequests([]);
+        setHelpedRequests([]);
+        setUserStats({
+          totalRequests: 0,
+          completedRequests: 0,
+          helpedOthers: 0,
+          impact: 0,
+          responseRate: 0
+        });
+        setAchievements([]);
       } finally {
         setLoading(false);
       }

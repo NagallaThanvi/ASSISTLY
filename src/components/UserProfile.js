@@ -149,50 +149,74 @@ const UserProfile = () => {
 
   const loadStats = async () => {
     try {
-      // Get requests created by user
-      const createdQuery = query(
-        collection(db, 'requests'),
-        where('createdByUid', '==', user.uid)
-      );
-      const createdSnapshot = await getDocs(createdQuery);
-      const requestsCreated = createdSnapshot.size;
+      let requestsCreated = 0;
+      let requestsHelped = 0;
+      let requestsCompleted = 0;
+      let createdSnapshot = { docs: [] };
+      let helpedSnapshot = { docs: [] };
 
-      // Get requests helped by user
-      const helpedQuery = query(
-        collection(db, 'requests'),
-        where('claimedByUid', '==', user.uid)
-      );
-      const helpedSnapshot = await getDocs(helpedQuery);
-      const requestsHelped = helpedSnapshot.size;
+      // Get requests created by user (with error handling)
+      try {
+        const createdQuery = query(
+          collection(db, 'requests'),
+          where('createdByUid', '==', user.uid)
+        );
+        createdSnapshot = await getDocs(createdQuery);
+        requestsCreated = createdSnapshot.size;
+      } catch (err) {
+        console.warn('Could not fetch created requests:', err.code);
+      }
 
-      // Get completed requests
-      const completedQuery = query(
-        collection(db, 'requests'),
-        where('claimedByUid', '==', user.uid),
-        where('status', '==', 'completed')
-      );
-      const completedSnapshot = await getDocs(completedQuery);
-      const requestsCompleted = completedSnapshot.size;
+      // Get requests helped by user (with error handling)
+      try {
+        const helpedQuery = query(
+          collection(db, 'requests'),
+          where('claimedByUid', '==', user.uid)
+        );
+        helpedSnapshot = await getDocs(helpedQuery);
+        requestsHelped = helpedSnapshot.size;
+      } catch (err) {
+        console.warn('Could not fetch helped requests:', err.code);
+      }
+
+      // Get completed requests (with error handling)
+      try {
+        const completedQuery = query(
+          collection(db, 'requests'),
+          where('claimedByUid', '==', user.uid),
+          where('status', '==', 'completed')
+        );
+        const completedSnapshot = await getDocs(completedQuery);
+        requestsCompleted = completedSnapshot.size;
+      } catch (err) {
+        console.warn('Could not fetch completed requests:', err.code);
+      }
 
       // Calculate average rating
       let totalRating = 0;
       let ratingCount = 0;
       
-      createdSnapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.rating && data.rating.ratedUserId === user.uid) {
-          totalRating += data.rating.score;
-          ratingCount++;
-        }
-      });
+      // Process created requests ratings
+      if (createdSnapshot.docs && Array.isArray(createdSnapshot.docs)) {
+        createdSnapshot.docs.forEach(doc => {
+          const data = doc.data();
+          if (data.rating && data.rating.ratedUserId === user.uid) {
+            totalRating += data.rating.score;
+            ratingCount++;
+          }
+        });
+      }
       
-      helpedSnapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.rating && data.rating.ratedUserId === user.uid) {
-          totalRating += data.rating.score;
-          ratingCount++;
-        }
-      });
+      // Process helped requests ratings
+      if (helpedSnapshot.docs && Array.isArray(helpedSnapshot.docs)) {
+        helpedSnapshot.docs.forEach(doc => {
+          const data = doc.data();
+          if (data.rating && data.rating.ratedUserId === user.uid) {
+            totalRating += data.rating.score;
+            ratingCount++;
+          }
+        });
+      }
 
       const averageRating = ratingCount > 0 ? (totalRating / ratingCount).toFixed(1) : 0;
 
@@ -215,6 +239,15 @@ const UserProfile = () => {
       });
     } catch (error) {
       console.error('Error loading stats:', error);
+      // Set default stats on error
+      setStats({
+        requestsCreated: 0,
+        requestsHelped: 0,
+        requestsCompleted: 0,
+        averageRating: 0,
+        totalRatings: 0,
+        badges: []
+      });
     }
   };
 

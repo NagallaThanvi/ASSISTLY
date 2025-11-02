@@ -116,11 +116,23 @@ const Login = () => {
       navigate(ROUTES.HOME);
     } catch (error) {
       console.error('Social login error:', error);
+      const msg =
+        error?.code === 'auth/unauthorized-domain'
+          ? 'Unauthorized domain. Add your domain to Firebase Auth > Settings > Authorized domains.'
+          : error?.code === 'auth/operation-not-allowed'
+          ? 'Google sign-in is disabled. Enable Google provider in Firebase Auth.'
+          : error?.code === 'auth/popup-blocked'
+          ? 'Popup was blocked by the browser. Allow popups for this site and try again.'
+          : error?.code === 'auth/popup-closed-by-user'
+          ? 'Sign-in popup was closed before completing.'
+          : error?.code === 'auth/invalid-api-key'
+          ? 'Invalid API key. Check your REACT_APP_FIREBASE_API_KEY in .env.'
+          : `Authentication failed (${error?.code || 'unknown error'}).`;
       setErrors(prev => ({
         ...prev,
-        general: 'Failed to sign in with ' + provider.providerId
+        general: msg
       }));
-      showNotification('Authentication failed', 'error');
+      showNotification(msg, 'error');
     } finally {
       setLoading(false);
       setAuthProvider('');

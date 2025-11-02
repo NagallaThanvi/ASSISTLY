@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Firestore Rules</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <h1>Firestore Rules Test</h1>
+  <div id="status">Loading...</div>
+  <div id="results"></div>
+
+  <script>
+    // TODO: Replace with YOUR Firebase config from src/firebase.js
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    const statusDiv = document.getElementById('status');
+    const resultsDiv = document.getElementById('results');
+
+    async function testRules() {
+      statusDiv.innerHTML = 'Testing...';
+      let output = '<h2>Test Results:</h2>';
+
+      try {
+        // Test 1: Check if user is logged in
+        const user = auth.currentUser;
+        output += `<p><strong>User:</strong> ${user ? user.email : '❌ NOT LOGGED IN'}</p>`;
+
+        if (!user) {
+          output += '<p style="color:red">❌ You need to login first! Go to your app and login, then run this test again.</p>';
+          resultsDiv.innerHTML = output;
+          statusDiv.innerHTML = 'Test Failed - Not Logged In';
+          return;
+        }
+
+        // Test 2: Try to read communities
+        output += '<p><strong>Test 2:</strong> Reading communities...</p>';
+        try {
+          const snapshot = await db.collection('communities').get();
+          output += `<p style="color:green">✅ SUCCESS! Found ${snapshot.size} communities</p>`;
+          snapshot.forEach(doc => {
+            output += `<p>  - ${doc.data().name}</p>`;
+          });
+        } catch (error) {
+          output += `<p style="color:red">❌ FAILED: ${error.message}</p>`;
+          output += '<p><strong>This means your Firestore rules are NOT deployed!</strong></p>';
+        }
+
+        // Test 3: Try to read own user document
+        output += '<p><strong>Test 3:</strong> Reading your user document...</p>';
+        try {
+          const userDoc = await db.collection('users').doc(user.uid).get();
+          if (userDoc.exists()) {
+            output += `<p style="color:green">✅ User document exists</p>`;
+            output += `<p>  Role: ${userDoc.data().role || 'none'}</p>`;
+          } else {
+            output += `<p style="color:orange">⚠️ User document doesn't exist (OK for new users)</p>`;
+          }
+        } catch (error) {
+          output += `<p style="color:red">❌ FAILED: ${error.message}</p>`;
+        }
+
+        statusDiv.innerHTML = 'Tests Complete';
+      } catch (error) {
+        output += `<p style="color:red">❌ ERROR: ${error.message}</p>`;
+        statusDiv.innerHTML = 'Test Failed';
+      }
+
+      resultsDiv.innerHTML = output;
+    }
+
+    // Wait for auth state
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        testRules();
+      } else {
+        statusDiv.innerHTML = '❌ Not Logged In';
+        resultsDiv.innerHTML = '<p>Please login to your app first, then refresh this page.</p>';
+      }
+    });
+  </script>
+</body>
+</html>

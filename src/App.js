@@ -30,9 +30,10 @@ import CommunityBadge from './components/CommunityBadge';
 import CommunityAdminDashboard from './components/CommunityAdminDashboard';
 import PendingJoinRequest from './components/PendingJoinRequest';
 import AdminLogin from './components/AdminLogin';
-import AdminSignup from './components/AdminSignup';
+import AdminSignupFlow from './components/AdminSignupFlow';
 import CreateCommunityPage from './pages/CreateCommunityPage';
 import CommunityListPage from './pages/CommunityListPage';
+import BrowseCommunitiesPage from './pages/BrowseCommunitiesPage';
 import CommunityPage from './pages/CommunityPage';
 import AdminPage from './pages/AdminPage';
 import Chatbot from './components/Chatbot';
@@ -112,42 +113,42 @@ function App() {
     }
   }, []);
 
-  // Seed communities on first load
-  React.useEffect(() => {
-    const initializeCommunities = async () => {
-      try {
-        const { seedDefaultCommunities } = await import('./utils/seedCommunities');
-        await seedDefaultCommunities();
-      } catch (error) {
-        console.error('Error initializing communities:', error);
-      }
-    };
-    
-    initializeCommunities();
-  }, []);
+  // Seed communities on first load - DISABLED (communities already exist)
+  // React.useEffect(() => {
+  //   const initializeCommunities = async () => {
+  //     try {
+  //       const { seedDefaultCommunities } = await import('./utils/seedCommunities');
+  //       await seedDefaultCommunities();
+  //     } catch (error) {
+  //       console.error('Error initializing communities:', error);
+  //     }
+  //   };
+  //   
+  //   initializeCommunities();
+  // }, []);
 
-  // Initialize trust score scheduler
-  React.useEffect(() => {
-    if (communityId) {
-      const initScheduler = async () => {
-        try {
-          const { initializeTrustScoreScheduler, updateOutdatedTrustScores } = await import('./utils/trustScoreScheduler');
-          
-          // Update outdated scores on app load
-          await updateOutdatedTrustScores(communityId);
-          
-          // Initialize daily scheduler
-          initializeTrustScoreScheduler(communityId);
-          
-          console.log('Trust score scheduler initialized');
-        } catch (error) {
-          console.error('Error initializing trust score scheduler:', error);
-        }
-      };
-      
-      initScheduler();
-    }
-  }, [communityId]);
+  // Initialize trust score scheduler - DISABLED (requires admin permissions)
+  // React.useEffect(() => {
+  //   if (communityId) {
+  //     const initScheduler = async () => {
+  //       try {
+  //         const { initializeTrustScoreScheduler, updateOutdatedTrustScores } = await import('./utils/trustScoreScheduler');
+  //         
+  //         // Update outdated scores on app load
+  //         await updateOutdatedTrustScores(communityId);
+  //         
+  //         // Initialize daily scheduler
+  //         initializeTrustScoreScheduler(communityId);
+  //         
+  //         console.log('Trust score scheduler initialized');
+  //       } catch (error) {
+  //         console.error('Error initializing trust score scheduler:', error);
+  //       }
+  //     };
+  //     
+  //     initScheduler();
+  //   }
+  // }, [communityId]);
 
   // Filter options are defined in AdvancedSearch component
 
@@ -450,24 +451,13 @@ function App() {
                 <Button color="inherit" component={Link} to="/profile">
                   Profile
                 </Button>
-                <Button color="inherit" component={Link} to="/communities">
-                  Communities
-                </Button>
                 
-                {/* Database Setup Button - Show for all users initially */}
-                <Button 
-                  color="inherit" 
-                  onClick={() => setShowDbInitializer(true)}
-                  sx={{
-                    bgcolor: 'rgba(255,255,255,0.15)',
-                    fontSize: '0.85rem',
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,0.25)',
-                    }
-                  }}
-                >
-                  🔧 Setup
-                </Button>
+                {/* Show Browse Communities only for regular users, not admins */}
+                {!userProfile?.role || userProfile?.role === 'user' || userProfile?.role === 'moderator' ? (
+                  <Button color="inherit" component={Link} to="/browse-communities" sx={{ fontSize: '0.85rem' }}>
+                    Find Communities
+                  </Button>
+                ) : null}
 
                 {/* Admin Button - Show only for admins */}
                 {userProfile?.role && (userProfile.role === 'super_admin' || userProfile.role === 'community_admin' || userProfile.role === 'moderator') && (
@@ -557,7 +547,7 @@ function App() {
         <Routes>
           <Route path={ROUTES.LOGIN} element={<Login />} />
           <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/admin-signup" element={<AdminSignup />} />
+          <Route path="/admin-signup" element={<AdminSignupFlow />} />
           <Route path={ROUTES.SIGNUP} element={<SignUp />} />
           <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />} />
           <Route path={ROUTES.TERMS} element={<TermsOfService />} />
@@ -591,6 +581,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CommunityListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/browse-communities"
+            element={
+              <ProtectedRoute>
+                <BrowseCommunitiesPage />
               </ProtectedRoute>
             }
           />

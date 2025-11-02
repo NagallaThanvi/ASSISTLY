@@ -58,25 +58,29 @@ service cloud.firestore {
 
     // Requests collection - CRITICAL: Only visible within same community
     match /requests/{requestId} {
-      // Read: Community members, request owner, or volunteer who claimed it
+      // Read: Must be member of the same community OR owner of the request
       allow read: if isAuthenticated() && 
                     (isMemberOfCommunity(resource.data.communityId) || 
-                     resource.data.createdByUid == request.auth.uid ||
-                     resource.data.claimedByUid == request.auth.uid);
+                     resource.data.createdByUid == request.auth.uid);
       
-      // Create: Must be authenticated and owner
+      // Create: Must be member and set communityId to your community
       allow create: if isAuthenticated() && 
-                     request.resource.data.createdByUid == request.auth.uid;
+                     request.resource.data.createdByUid == request.auth.uid &&
+                     isMemberOfCommunity(request.resource.data.communityId) &&
+                     getUserData() != null &&
+                     request.resource.data.communityId == getUserData().communityId;
       
-      // Update: Owner can always update, or member of community can claim/update
+      // Update: Must be member of community and either owner, volunteer, or admin
       allow update: if isAuthenticated() && 
-                     (resource.data.createdByUid == request.auth.uid ||
-                      isMemberOfCommunity(resource.data.communityId) ||
+                     isMemberOfCommunity(resource.data.communityId) &&
+                     (isOwner(resource.data.createdByUid) || 
+                      request.auth.uid == resource.data.claimedByUid ||
                       isAdminOfCommunity(resource.data.communityId));
       
       // Delete: Only owner or admin can delete
       allow delete: if isAuthenticated() && 
-                     (resource.data.createdByUid == request.auth.uid ||
+                     isMemberOfCommunity(resource.data.communityId) &&
+                     (isOwner(resource.data.createdByUid) || 
                       isAdminOfCommunity(resource.data.communityId));
     }
 
@@ -92,17 +96,19 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && getUserData() != null && getUserData().role == 'super_admin';
     }
 
-    // Messages collection - users can read/write their own messages
+    // Messages collection - only between members of same community
     match /messages/{messageId} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && 
+                    (resource.data.senderId == request.auth.uid || 
+                     resource.data.recipientId == request.auth.uid);
       allow create: if isAuthenticated() && 
                      request.resource.data.senderId == request.auth.uid;
-      allow update, delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
     }
 
     // Gamification profiles
     match /gamification/{userId} {
-      allow read: if isAuthenticated() && isOwner(userId);
+      allow read: if isAuthenticated() && 
+                    (isOwner(userId) || isMemberOfCommunity(resource.data.communityId));
       allow write: if isAuthenticated() && isOwner(userId);
     }
 
@@ -129,7 +135,7 @@ service cloud.firestore {
     // Audit Logs (Super Admin only)
     match /audit_logs/{logId} {
       allow read: if isAuthenticated() && getUserData() != null && getUserData().role == 'super_admin';
-      allow write: if false; // System-only writes
+      allow write: if false;
     }
   }
 }

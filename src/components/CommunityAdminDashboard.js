@@ -26,7 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
-import { isCommunityAdmin, hasPermission, ADMIN_PERMISSIONS } from '../utils/adminUtils';
+import { hasPermission, ADMIN_PERMISSIONS } from '../utils/adminUtils';
 import { getCommunityStatistics } from '../utils/communityStats';
 import AdminOverview from './admin/AdminOverview';
 import AdminUserManagement from './admin/AdminUserManagement';
@@ -36,7 +36,6 @@ import AdminSettings from './admin/AdminSettings';
 import AdminLogs from './admin/AdminLogs';
 import AdminManagement from './admin/AdminManagement';
 import AdminJoinRequests from './admin/AdminJoinRequests';
-import AdminCleanup from './admin/AdminCleanup';
 import AdminCommunityCreator from './admin/AdminCommunityCreator';
 
 function TabPanel({ children, value, index }) {
@@ -57,12 +56,14 @@ const CommunityAdminDashboard = () => {
 
   useEffect(() => {
     checkAdminAccess();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
     if (isAdmin && communityId) {
       loadStatistics();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, communityId]);
 
   const checkAdminAccess = async () => {
@@ -102,7 +103,6 @@ const CommunityAdminDashboard = () => {
   };
 
   const handleTabChange = (event, newValue) => {
-    console.log('Tab changed to:', newValue);
     setActiveTab(newValue);
   };
 
@@ -115,23 +115,12 @@ const CommunityAdminDashboard = () => {
     { label: 'Branding', icon: <BrandingIcon />, permission: ADMIN_PERMISSIONS.MANAGE_BRANDING },
     { label: 'Admins', icon: <AdminIcon />, permission: ADMIN_PERMISSIONS.MANAGE_ADMINS },
     { label: 'Settings', icon: <SettingsIcon />, permission: ADMIN_PERMISSIONS.MANAGE_SETTINGS },
-    { label: 'Activity Logs', icon: <LogsIcon />, permission: ADMIN_PERMISSIONS.VIEW_LOGS },
-    { label: 'Cleanup', icon: <SettingsIcon />, permission: ADMIN_PERMISSIONS.MANAGE_SETTINGS, superAdminOnly: true }
+    { label: 'Activity Logs', icon: <LogsIcon />, permission: ADMIN_PERMISSIONS.VIEW_LOGS }
   ];
 
   const visibleTabs = tabs.filter(tab => 
     hasPermission(userProfile?.role, tab.permission)
   );
-
-  console.log('Admin Dashboard State:', {
-    loading,
-    isAdmin,
-    communityId,
-    userProfile,
-    activeTab,
-    visibleTabsCount: visibleTabs?.length,
-    tabs: visibleTabs.map(t => t.label)
-  });
 
   if (loading) {
     return (
@@ -169,50 +158,6 @@ const CommunityAdminDashboard = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Debug Panel - Remove this after troubleshooting */}
-      <Paper sx={{ p: 2, mb: 3, bgcolor: 'info.light', border: '2px solid', borderColor: 'info.main' }}>
-        <Typography variant="h6" gutterBottom fontWeight="bold">
-          🔍 Debug Information
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
-            <Typography variant="body2" component="pre" sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
-              {JSON.stringify({
-                'Logged In': !!user,
-                'User Email': user?.email || 'Not logged in',
-                'User Role': userProfile?.role || 'No role',
-                'Community ID': communityId || 'No community',
-                'Is Admin': isAdmin,
-                'Loading': loading
-              }, null, 2)}
-            </Typography>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Alert severity={isAdmin ? 'success' : 'error'}>
-              <Typography variant="body2" fontWeight="bold">
-                {isAdmin ? '✅ Admin Access Granted' : '❌ No Admin Access'}
-              </Typography>
-              {!isAdmin && (
-                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                  To fix: Go to Firebase Console → Firestore → users collection → 
-                  Find your user → Set role: "super_admin"
-                </Typography>
-              )}
-            </Alert>
-            {!communityId && isAdmin && (
-              <Alert severity="warning" sx={{ mt: 1 }}>
-                <Typography variant="body2" fontWeight="bold">
-                  ⚠️ No Community Assigned
-                </Typography>
-                <Typography variant="caption" display="block">
-                  Click "Communities" tab below to create one
-                </Typography>
-              </Alert>
-            )}
-          </Grid>
-        </Grid>
-      </Paper>
-
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -398,10 +343,6 @@ const CommunityAdminDashboard = () => {
 
       <TabPanel value={activeTab} index={8}>
         <AdminLogs communityId={communityId} />
-      </TabPanel>
-
-      <TabPanel value={activeTab} index={9}>
-        <AdminCleanup />
       </TabPanel>
     </Container>
   );
