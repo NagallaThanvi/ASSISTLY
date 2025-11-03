@@ -75,16 +75,16 @@ service cloud.firestore {
                      request.resource.data.createdByUid == request.auth.uid;
       
       // Update: Owner can always update, or member of community can claim/update
-      // Claiming rules: Only if status is 'open' and not claiming own request
       allow update: if isAuthenticated() && 
                      (resource.data.createdByUid == request.auth.uid ||
                       isAdminOfCommunity(resource.data.communityId) ||
-                      (isMemberOfCommunity(resource.data.communityId) && 
-                       // Allow claiming only if request is open and not own request
-                       (request.resource.data.status != 'claimed' || 
-                        resource.data.status == 'claimed' ||
-                        resource.data.claimedByUid == request.auth.uid) &&
-                       request.resource.data.createdByUid != request.auth.uid));
+                      (isMemberOfCommunity(resource.data.communityId) &&
+                       // When claiming: must be open status and not own request
+                       ((resource.data.status == 'open' && 
+                         request.resource.data.claimedByUid == request.auth.uid &&
+                         resource.data.createdByUid != request.auth.uid) ||
+                        // When updating already claimed request: must be the claimer
+                        (resource.data.claimedByUid == request.auth.uid))));
       
       // Delete: Only owner or admin can delete
       allow delete: if isAuthenticated() && 
