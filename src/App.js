@@ -275,6 +275,18 @@ function App() {
       const requestRef = doc(db, 'requests', requestId);
       const request = requests.find(req => req.id === requestId);
       
+      // Check if request is already claimed
+      if (request?.status !== 'open') {
+        showNotification('This request has already been claimed by another volunteer', 'warning');
+        return;
+      }
+      
+      // Check if user is trying to claim their own request
+      if (request?.createdByUid === user.uid) {
+        showNotification('You cannot volunteer for your own request', 'warning');
+        return;
+      }
+      
       await updateDoc(requestRef, {
         status: 'claimed',
         claimedByUid: user.uid,
