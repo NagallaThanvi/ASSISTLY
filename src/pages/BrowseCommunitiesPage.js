@@ -113,9 +113,8 @@ export default function BrowseCommunitiesPage() {
       return;
     }
 
-    // Wait for userProfile to load
+    // Wait for userProfile to load - don't show notification, just prevent action
     if (!userProfile) {
-      showNotification('Loading your profile...', 'info');
       return;
     }
 
@@ -305,7 +304,7 @@ export default function BrowseCommunitiesPage() {
                       variant="contained"
                       color={buttonState.color}
                       startIcon={buttonState.icon}
-                      disabled={buttonState.disabled || requestLoading[community.id]}
+                      disabled={buttonState.disabled || requestLoading[community.id] || !userProfile}
                       onClick={() => handleRequestJoin(community.id, community.name)}
                     >
                       {requestLoading[community.id] ? (
