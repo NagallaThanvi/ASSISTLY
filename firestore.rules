@@ -64,6 +64,12 @@ service cloud.firestore {
                      resource.data.createdByUid == request.auth.uid ||
                      resource.data.claimedByUid == request.auth.uid);
       
+      // List/Query: Allow users to query their own requests or community requests
+      allow list: if isAuthenticated() && 
+                    (isMemberOfCommunity(request.query.communityId) ||
+                     request.query.createdByUid == request.auth.uid ||
+                     request.query.claimedByUid == request.auth.uid);
+      
       // Create: Must be authenticated and owner
       allow create: if isAuthenticated() && 
                      request.resource.data.createdByUid == request.auth.uid;
