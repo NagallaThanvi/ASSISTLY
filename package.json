@@ -13,7 +13,6 @@
     "@testing-library/react": "^13.3.0",
     "@testing-library/user-event": "^13.5.0",
     "firebase": "^12.4.0",
-    "firebase-messaging": "^1.0.6",
     "ipaddr.js": "^2.2.0",
     "leaflet": "^1.9.4",
     "prop-types": "^15.8.1",
@@ -30,7 +29,13 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint src --ext .js,.jsx",
+    "lint:fix": "eslint src --ext .js,.jsx --fix",
+    "deploy:firebase": "npm run build && firebase deploy --only hosting",
+    "deploy:rules": "firebase deploy --only firestore:rules",
+    "audit:security": "npm audit && echo '\n\nRun: npm audit fix' to resolve issues",
+    "analyze": "source-map-explorer 'build/static/js/*.js'"
   },
   "eslintConfig": {
     "extends": [
