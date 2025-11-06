@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
+import { logError, ErrorSeverity } from '../services/errorLogger';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -16,8 +17,13 @@ class ErrorBoundary extends React.Component {
       error: error,
       errorInfo: errorInfo
     });
-    // Here you can also log the error to an error reporting service
-    console.error('Error caught by boundary:', error, errorInfo);
+    
+    // Log error to monitoring service
+    logError(error, {
+      component: this.props.componentName || 'Unknown',
+      errorInfo: errorInfo,
+      componentStack: errorInfo.componentStack
+    }, ErrorSeverity.FATAL);
   }
 
   render() {

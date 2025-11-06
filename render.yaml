@@ -5,9 +5,42 @@ services:
     buildCommand: npm install && npm run build
     staticPublishPath: ./build
     headers:
+      # Cache control
       - path: /*
         name: Cache-Control
         value: public, max-age=0, must-revalidate
+      
+      # Security headers
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      
+      - path: /*
+        name: X-XSS-Protection
+        value: 1; mode=block
+      
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      
+      - path: /*
+        name: Permissions-Policy
+        value: geolocation=(self), microphone=(), camera=()
+      
+      # Static assets caching
+      - path: /static/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      
+      # Service worker no cache
+      - path: /service-worker.js
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
+    
     routes:
       - type: rewrite
         source: /*
