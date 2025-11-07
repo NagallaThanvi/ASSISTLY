@@ -259,6 +259,72 @@ For issues or questions:
 - Create an issue on GitHub
 - Check [MULTI_COMMUNITY_ARCHITECTURE.md](./MULTI_COMMUNITY_ARCHITECTURE.md) for technical details
 
+## 🌓 Dark mode (new)
+
+We added a small, optional React component `DarkModeToggle` to make it easy to add a dark/light theme toggle to the app.
+
+- File: `src/components/DarkModeToggle.js`
+- What it does: toggles a `dark-mode` CSS class on the `<html>` element and persists the user's choice in `localStorage`.
+- How to use:
+
+    1. Import and place the toggle somewhere in your layout (e.g. in `src/App.js`):
+
+    ```jsx
+    import DarkModeToggle from './components/DarkModeToggle';
+
+    function App() {
+        return (
+            <div>
+                {/* place in header or settings */}
+                <DarkModeToggle />
+                {/* rest of app */}
+            </div>
+        );
+    }
+    ```
+
+    2. Add styles for dark mode in your CSS. Example (add to `index.css` or `App.css`):
+
+    ```css
+    .dark-mode {
+        --bg: #111;
+        --text: #eee;
+        background-color: var(--bg);
+        color: var(--text);
+    }
+
+    /* You can scope defaults and use CSS variables throughout the app */
+    body { background-color: white; color: #111; }
+    .dark-mode body, .dark-mode .App { background-color: #111; color: #eee; }
+    ```
+
+    3. Start the app and click the toggle. Preference is remembered across sessions.
+
+This component is intentionally minimal and opt-in; it doesn't change app CSS by itself — it only toggles the `dark-mode` class so you can style the site as you prefer.
+
 ---
 
 **Remember**: This is a multi-community platform where **privacy and isolation** are key. Each community operates independently with its own admin control. 🏘️🔒
+
+## 🔔 Notification Preferences
+
+The platform now includes a comprehensive notification management system that allows users to:
+- Customize email and push notification settings
+- Control notifications for:
+  - Request updates
+  - Community announcements
+  - Chat messages
+  - Weekly digest emails
+  
+### Using the Notification Preferences Panel
+
+To integrate the notification preferences panel in your community:
+
+```jsx
+import NotificationPreferencesPanel from './components/NotificationPreferencesPanel';
+
+// In your component:
+<NotificationPreferencesPanel />
+```
+
+The panel automatically loads and saves user preferences, providing a seamless experience for managing notifications. All preferences are stored securely and can be updated at any time.
