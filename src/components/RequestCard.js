@@ -295,4 +295,4 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
   );
 };
 
-export default RequestCard;
+export default React.memo(RequestCard);
