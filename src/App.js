@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Box, CssBaseline, AppBar, Toolbar, Typography, Button, Container, ToggleButtonGroup, ToggleButton, IconButton, ThemeProvider, createTheme } from '@mui/material';
+import { COLORS, TYPOGRAPHY } from './utils/designSystem';
 import { VolunteerActivism as VolunteerIcon, Home as HomeIcon, Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon, Map as MapIcon, ViewList as ListIcon, Handshake as HandshakeIcon, Favorite as FavoriteIcon } from '@mui/icons-material';
 import { collection, doc, query, where, orderBy, onSnapshot, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
@@ -91,11 +92,49 @@ function App() {
         palette: {
           mode: darkMode ? 'dark' : 'light',
           primary: {
-            main: darkMode ? '#9c27b0' : '#667eea',
+            main: COLORS.primary[600],
+            light: COLORS.primary[400],
+            dark: COLORS.primary[800],
+            contrastText: '#ffffff',
           },
           secondary: {
-            main: darkMode ? '#f48fb1' : '#764ba2',
+            main: COLORS.secondary[500],
+            light: COLORS.secondary[300],
+            dark: COLORS.secondary[700],
+            contrastText: '#ffffff',
           },
+          success: {
+            main: COLORS.success,
+          },
+          error: {
+            main: COLORS.error,
+          },
+          warning: {
+            main: COLORS.warning,
+          },
+          info: {
+            main: COLORS.info,
+          },
+          background: {
+            default: darkMode ? COLORS.neutral[900] : '#ffffff',
+            paper: darkMode ? COLORS.neutral[800] : COLORS.neutral[50],
+          },
+          text: {
+            primary: darkMode ? COLORS.neutral[50] : COLORS.neutral[900],
+            secondary: darkMode ? COLORS.neutral[300] : COLORS.neutral[600],
+          },
+        },
+        typography: {
+          fontFamily: TYPOGRAPHY.fontFamily.base,
+          h1: { fontSize: TYPOGRAPHY.fontSize['4xl'], fontWeight: TYPOGRAPHY.fontWeight.bold },
+          h2: { fontSize: TYPOGRAPHY.fontSize['3xl'], fontWeight: TYPOGRAPHY.fontWeight.bold },
+          h3: { fontSize: TYPOGRAPHY.fontSize['2xl'], fontWeight: TYPOGRAPHY.fontWeight.semibold },
+          h4: { fontSize: TYPOGRAPHY.fontSize.xl, fontWeight: TYPOGRAPHY.fontWeight.semibold },
+          h5: { fontSize: TYPOGRAPHY.fontSize.lg, fontWeight: TYPOGRAPHY.fontWeight.semibold },
+          h6: { fontSize: TYPOGRAPHY.fontSize.base, fontWeight: TYPOGRAPHY.fontWeight.semibold },
+          body1: { fontSize: TYPOGRAPHY.fontSize.base, fontWeight: TYPOGRAPHY.fontWeight.normal },
+          body2: { fontSize: TYPOGRAPHY.fontSize.sm, fontWeight: TYPOGRAPHY.fontWeight.normal },
+          button: { textTransform: 'none', fontWeight: TYPOGRAPHY.fontWeight.medium },
         },
       }),
     [darkMode]
