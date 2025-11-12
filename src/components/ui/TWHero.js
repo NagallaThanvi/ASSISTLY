@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { ROUTES } from '../../utils/constants';
 
 export default function TWHero({ title = 'Welcome to Assistly', subtitle = 'Connect with neighbors who care' }) {
   return (
@@ -8,8 +10,8 @@ export default function TWHero({ title = 'Welcome to Assistly', subtitle = 'Conn
         <p className="mt-4 text-lg md:text-xl text-purple-100 max-w-2xl mx-auto">{subtitle}</p>
 
         <div className="mt-8 flex items-center justify-center gap-3">
-          <a className="inline-block bg-white text-purple-700 font-semibold px-6 py-3 rounded-lg shadow hover:shadow-lg transition" href="#">Get Started</a>
-          <a className="inline-block text-white/90 px-4 py-3 rounded-lg border border-white/20 hover:bg-white/10 transition" href="#">Learn More</a>
+          <Link className="inline-block bg-white text-purple-700 font-semibold px-6 py-3 rounded-lg shadow hover:shadow-lg transition" to={ROUTES.REQUESTS}>Get Started</Link>
+          <Link className="inline-block text-white/90 px-4 py-3 rounded-lg border border-white/20 hover:bg-white/10 transition" to="/tw-demo">Learn More</Link>
         </div>
       </div>
     </section>

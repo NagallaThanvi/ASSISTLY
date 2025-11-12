@@ -1,16 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  Chip,
-  Avatar,
-  Rating,
-  TextField,
-  Divider
-} from '@mui/material';
+import Rating from '@mui/material/Rating';
 import { doc, getDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useApp } from '../context/AppContext';
@@ -39,7 +29,7 @@ const RequestDetail = () => {
         }
         if (mounted) setRequest({ id: snap.id, ...snap.data() });
       } catch (err) {
-        console.error('Error loading request', err);
+        // Avoid printing to console in production builds; notify user instead
         showNotification('Error loading request', 'error');
       } finally {
         if (mounted) setLoading(false);
@@ -67,59 +57,75 @@ const RequestDetail = () => {
       showNotification('Thanks for your feedback!');
       setComment('');
     } catch (err) {
-      console.error('Rating submit error', err);
+      // surface to user via notification rather than console
       showNotification('Failed to submit rating', 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) return <Typography>Loading…</Typography>;
+  if (loading) return <div className="p-4 text-center">Loading…</div>;
   if (!request) return null;
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Paper sx={{ p: 3, maxWidth: 900, margin: '0 auto' }} elevation={2}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <Avatar>{request.postedBy ? request.postedBy.charAt(0) : 'U'}</Avatar>
-          <Box>
-            <Typography variant="h5">{request.title}</Typography>
-            <Typography variant="body2" color="text.secondary">Posted by {request.postedBy || 'Anonymous'}</Typography>
-          </Box>
-          <Box sx={{ flexGrow: 1 }} />
-          <Chip label={request.status?.toUpperCase()} color={request.status === 'open' ? 'info' : request.status === 'claimed' ? 'warning' : 'success'} />
-        </Box>
+    <div className="p-4">
+      <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg max-w-3xl mx-auto p-6">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="h-12 w-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-semibold">{request.postedBy ? request.postedBy.charAt(0) : 'U'}</div>
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{request.title}</h2>
+            <div className="text-sm text-gray-500">Posted by {request.postedBy || 'Anonymous'}</div>
+          </div>
+          <div className="flex-1" />
+          <div className="px-3 py-1 rounded-full text-sm font-medium text-white" style={{ backgroundColor: request.status === 'open' ? '#0284c7' : request.status === 'claimed' ? '#f59e0b' : '#10b981' }}>{(request.status || '').toUpperCase()}</div>
+        </div>
 
-        <Divider sx={{ mb: 2 }} />
+        <div className="border-b border-gray-100 pb-4 mb-4" />
 
-        <Typography variant="body1" paragraph>{request.description}</Typography>
+        <p className="text-gray-700 dark:text-gray-200 mb-4">{request.description}</p>
 
-        <Box sx={{ mt: 2 }}>
-          <Typography variant="subtitle1">Contact</Typography>
-          <Typography variant="body2">{request.contactInfo || '—'}</Typography>
-        </Box>
+        <div className="mt-2">
+          <h3 className="text-sm font-medium text-gray-800 dark:text-gray-200">Contact</h3>
+          <div className="text-sm text-gray-600 dark:text-gray-300">{request.contactInfo || '—'}</div>
+        </div>
 
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="h6">Leave a rating</Typography>
-          <Rating value={rating} onChange={(e, v) => setRating(v)} />
-          <TextField
+        <div className="mt-6">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Leave a rating</h3>
+          <div className="mt-2 flex items-center gap-3">
+            <Rating value={rating} onChange={(e, v) => setRating(v || 0)} />
+            <span className="text-sm text-gray-600">{rating} / 5</span>
+          </div>
+
+          <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Optional comment"
-            multiline
-            rows={3}
-            fullWidth
-            sx={{ mt: 1 }}
+            rows={4}
+            className="mt-3 w-full rounded-md border border-gray-200 focus:ring-2 focus:ring-indigo-300 p-2 bg-white text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+            aria-label="Optional comment"
           />
-          <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-            <Button variant="contained" onClick={submitRating} disabled={submitting}>
+
+          <div className="mt-4 flex items-center gap-2">
+            <button
+              className="inline-flex items-center justify-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-60"
+              onClick={submitRating}
+              disabled={submitting}
+              aria-disabled={submitting}
+            >
               Submit
-            </Button>
-            <Button variant="outlined" onClick={() => navigate(-1)}>Back</Button>
-          </Box>
-        </Box>
-      </Paper>
-    </Box>
+            </button>
+
+            <button
+              className="inline-flex items-center justify-center border border-gray-300 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-50"
+              type="button"
+              onClick={() => navigate(-1)}
+            >
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
