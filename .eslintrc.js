@@ -9,27 +9,25 @@
  * Usage: npm run lint:fix
  */
 
+/**
+ * ESLint configuration for the project.
+ *
+ * Note: package scripts belong in package.json — not in this file.
+ */
 module.exports = {
-  "scripts": {
-    "lint": "eslint src --ext .js,.jsx",
-    "lint:fix": "eslint src --ext .js,.jsx --fix",
-    "lint:report": "eslint src --ext .js,.jsx --output-file eslint-report.json --format json"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "rules": {
-      // Relax some rules while keeping security intact
-      "no-console": ["warn", { "allow": ["warn", "error", "info"] }],
-      "no-unused-vars": ["warn", { 
-        "argsIgnorePattern": "^_",
-        "varsIgnorePattern": "^_" 
-      }],
-      "react-hooks/exhaustive-deps": "warn",
-      "no-useless-escape": "warn",
-      "import/no-anonymous-default-export": "warn"
-    }
+  extends: [
+    'react-app',
+    'react-app/jest'
+  ],
+  rules: {
+    // Relax some rules while keeping security intact
+    'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+    'no-unused-vars': ['warn', {
+      argsIgnorePattern: '^_',
+      varsIgnorePattern: '^_'
+    }],
+    'react-hooks/exhaustive-deps': 'warn',
+    'no-useless-escape': 'warn',
+    'import/no-anonymous-default-export': 'warn'
   }
 };
