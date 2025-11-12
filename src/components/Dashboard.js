@@ -569,40 +569,40 @@ const Dashboard = () => {
 
           {/* My Requests Tab */}
           <TabPanel value={activeTab} index={0}>
-            <Grid container spacing={3}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {myRequests.length > 0 ? (
                 myRequests.map(request => (
-                  <Grid item xs={12} sm={6} md={4} key={request.id}>
+                  <div key={request.id}>
                     <RequestCard request={request} />
-                  </Grid>
+                  </div>
                 ))
               ) : (
-                <Grid item xs={12}>
+                <div className="col-span-full">
                   <Typography align="center" color="textSecondary">
                     You haven't created any requests yet
                   </Typography>
-                </Grid>
+                </div>
               )}
-            </Grid>
+            </div>
           </TabPanel>
 
           {/* Helped Others Tab */}
           <TabPanel value={activeTab} index={1}>
-            <Grid container spacing={3}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {helpedRequests.length > 0 ? (
                 helpedRequests.map(request => (
-                  <Grid item xs={12} sm={6} md={4} key={request.id}>
+                  <div key={request.id}>
                     <RequestCard request={request} />
-                  </Grid>
+                  </div>
                 ))
               ) : (
-                <Grid item xs={12}>
+                <div className="col-span-full">
                   <Typography align="center" color="textSecondary">
                     You haven't helped with any requests yet
                   </Typography>
-                </Grid>
+                </div>
               )}
-            </Grid>
+            </div>
           </TabPanel>
 
           {/* Achievements Tab */}
