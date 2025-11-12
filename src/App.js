@@ -38,6 +38,7 @@ import CommunityPage from './pages/CommunityPage';
 import AdminPage from './pages/AdminPage';
 import Chatbot from './components/Chatbot';
 import DatabaseInitializer from './components/DatabaseInitializer';
+import TailwindDemo from './pages/TailwindDemo';
 
 // Meta tags setup
 document.title = process.env.REACT_APP_NAME || 'Assistly';
@@ -557,6 +558,7 @@ function App() {
         </AppBar>
 
         <Routes>
+            <Route path="/tw-demo" element={<TailwindDemo/>} />
           <Route path={ROUTES.LOGIN} element={<Login />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/admin-signup" element={<AdminSignupFlow />} />
