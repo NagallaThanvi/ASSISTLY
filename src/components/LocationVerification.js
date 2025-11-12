@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -48,13 +48,7 @@ const LocationVerification = ({
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (open) {
-      getUserLocation();
-    }
-  }, [open]);
-
-  const getUserLocation = () => {
+  const getUserLocation = useCallback(() => {
     setLoading(true);
     setError('');
 
@@ -88,7 +82,7 @@ const LocationVerification = ({
         setLoading(false);
       },
       (error) => {
-        console.error('Error getting location:', error);
+        // Error getting location (notify user)
         setError('Unable to get your location. Please enable location services and try again.');
         setLoading(false);
       },
@@ -98,7 +92,13 @@ const LocationVerification = ({
         maximumAge: 0
       }
     );
-  };
+  }, [requestLocation, maxDistance]);
+
+  useEffect(() => {
+    if (open) {
+      getUserLocation();
+    }
+  }, [open, getUserLocation]);
 
   const handleComplete = () => {
     if (verified && userLocation) {

@@ -442,14 +442,12 @@ const Dashboard = () => {
         });
 
         setAchievements(userAchievements);
-        setMyRequests(myRequests);
-        setHelpedRequests(helpedRequests);
         setUserStats({
           totalRequests: communityTotalRequests,
           completedRequests: communityTotalHelped,
           helpedOthers: helped.length,
-          impact: myRequests.length,
-          responseRate: requests.size >= 50 ? (helped.length / requests.size) * 100 : 0
+          impact: requests.length,
+          responseRate: requests.length >= 50 ? (helped.length / requests.length) * 100 : 0
         });
 
       } catch (error) {
