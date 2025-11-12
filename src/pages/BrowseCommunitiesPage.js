@@ -51,11 +51,10 @@ export default function BrowseCommunitiesPage() {
   const fetchCommunities = async () => {
     setLoading(true);
     try {
-      console.log('Fetching communities...');
+      // Fetching communities (internal state tracking)
       
       // Fetch all communities
       const communitiesSnap = await getDocs(collection(db, 'communities'));
-      console.log('Communities fetched:', communitiesSnap.size);
       
       const allCommunities = communitiesSnap.docs.map(doc => ({
         id: doc.id,
@@ -65,13 +64,11 @@ export default function BrowseCommunitiesPage() {
       // Fetch user's join requests (with error handling)
       if (user) {
         try {
-          console.log('Fetching join requests for user:', user.uid);
           const joinRequestsQuery = query(
             collection(db, 'join_requests'),
             where('userId', '==', user.uid)
           );
           const joinRequestsSnap = await getDocs(joinRequestsQuery);
-          console.log('Join requests fetched:', joinRequestsSnap.size);
           
           const requests = {};
           joinRequestsSnap.docs.forEach(doc => {
@@ -80,18 +77,15 @@ export default function BrowseCommunitiesPage() {
           });
           setUserJoinRequests(requests);
         } catch (joinError) {
-          console.warn('Could not fetch join requests:', joinError);
+          // Could not fetch join requests (continue anyway - not critical)
           // Continue anyway - not critical
         }
       }
 
       setCommunities(allCommunities);
-      console.log('Communities set successfully:', allCommunities.length);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching communities:', error);
-      console.error('Error code:', error.code);
-      console.error('Error message:', error.message);
+      // Error fetching communities
       showNotification(`Failed to load communities: ${error.message}`, 'error');
       setLoading(false);
     }

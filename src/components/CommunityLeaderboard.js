@@ -21,14 +21,12 @@ import {
 } from '@mui/material';
 import {
   EmojiEvents as TrophyIcon,
-  TrendingUp as TrendingIcon,
   Star as StarIcon,
   LocalFireDepartment as FireIcon,
   Favorite as HeartIcon,
-  WorkspacePremium as BadgeIcon,
   Info as InfoIcon
 } from '@mui/icons-material';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 

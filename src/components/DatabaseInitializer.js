@@ -21,8 +21,7 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemText,
-  Chip
+  ListItemText
 } from '@mui/material';
 import {
   CheckCircle as CheckIcon,

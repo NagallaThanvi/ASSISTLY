@@ -120,7 +120,7 @@ const Dashboard = () => {
           return;
         }
 
-        console.log('Dashboard: Fetching data for user:', user.uid);
+        // Fetching data for user (internal tracking)
 
         // Get last 6 months for activity chart
         const sixMonthsAgo = new Date();
@@ -138,9 +138,8 @@ const Dashboard = () => {
             id: doc.id,
             ...doc.data()
           }));
-          console.log('Dashboard: Found', requests.length, 'requests');
         } catch (reqError) {
-          console.warn('Dashboard: Could not fetch requests:', reqError.code);
+          // Could not fetch requests (continue with empty array)
           // Continue with empty array
         }
         setMyRequests(requests);
@@ -164,9 +163,8 @@ const Dashboard = () => {
             id: doc.id,
             ...doc.data()
           }));
-          console.log('Dashboard: Found', helped.length, 'helped requests');
         } catch (helpError) {
-          console.warn('Dashboard: Could not fetch helped requests:', helpError.code);
+          // Could not fetch helped requests (continue with empty array)
           // Continue with empty array
         }
         setHelpedRequests(helped);

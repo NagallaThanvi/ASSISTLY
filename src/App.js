@@ -749,8 +749,7 @@ function App() {
                     <MapView 
                       requests={filteredRequests}
                       onRequestClick={(request) => {
-                        // Scroll to request or open details
-                        console.log('Request clicked:', request);
+                        // Scroll to request or open details (reserved for future click handling)
                       }}
                     />
                   ) : (

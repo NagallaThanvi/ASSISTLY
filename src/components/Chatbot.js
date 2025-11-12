@@ -103,7 +103,7 @@ export default function Chatbot() {
     try {
       // Analyze intent for better UX
       const intents = analyzeIntent(messageText);
-      console.log('Detected intents:', intents);
+      // Debug: intents detected and used internally for response routing
 
       // Get bot response
       const response = await getChatbotResponse(

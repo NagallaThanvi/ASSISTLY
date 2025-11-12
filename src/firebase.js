@@ -31,10 +31,12 @@ const db = getFirestore(app);
 if (typeof window !== 'undefined') {
   enableIndexedDbPersistence(db)
     .catch((err) => {
+      // Silently fail if persistence is not available in this tab or browser
+      // Errors are expected in multi-tab scenarios or unsupported browsers
       if (err.code === 'failed-precondition') {
-        console.log('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+        // Multiple tabs open, persistence can only be enabled in one tab at a time.
       } else if (err.code === 'unimplemented') {
-        console.log('The current browser does not support persistence.');
+        // The current browser does not support persistence.
       }
     });
 }
