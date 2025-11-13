@@ -1,7 +1,7 @@
 import { createContext, useState, useContext } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { MESSAGES } from '../utils/constants';
+import { _MESSAGES } from '../utils/constants';
 
 export const AppContext = createContext();
 

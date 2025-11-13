@@ -139,6 +139,23 @@ export const TRANSITIONS = {
   slow: '300ms cubic-bezier(0.4, 0, 0.2, 1)',
 };
 
+// Dark mode friendly tokens. Components can reference these for consistent dark
+// styling. This keeps dark-mode-specific values near the design tokens.
+export const DARK = {
+  background: {
+    default: '#06111a', // deep navy-greenish to reduce blue glare
+    paper: '#071824',
+  },
+  text: {
+    primary: '#e6eef6',
+    secondary: '#9fb0c3'
+  },
+  primaryMuted: '#3f4aa6', // slightly muted primary for dark surfaces
+  shadows: {
+    subtle: '0 1px 2px rgba(0,0,0,0.6)'
+  }
+};
+
 export default {
   COLORS,
   TYPOGRAPHY,

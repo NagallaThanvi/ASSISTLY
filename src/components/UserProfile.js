@@ -36,15 +36,15 @@ import {
   EmojiEvents as TrophyIcon,
   Verified as VerifiedIcon,
   CheckCircle as CheckCircleIcon,
-  Shield as ShieldIcon
+  Shield as _ShieldIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import ProfileEditor from './ProfileEditor';
-import { formatDate } from '../utils/helpers';
-import { getTrustScoreColor, calculateTrustScore } from '../utils/trustScore';
+import { formatDate as _formatDate } from '../utils/helpers';
+import { getTrustScoreColor as _getTrustScoreColor, calculateTrustScore } from '../utils/trustScore';
 
 function TabPanel({ children, value, index }) {
   return (

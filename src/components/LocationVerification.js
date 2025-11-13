@@ -81,7 +81,7 @@ const LocationVerification = ({
 
         setLoading(false);
       },
-      (error) => {
+      (_error) => {
         // Error getting location (notify user)
         setError('Unable to get your location. Please enable location services and try again.');
         setLoading(false);

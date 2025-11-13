@@ -91,38 +91,37 @@ function App() {
       createTheme({
         palette: {
           mode: darkMode ? 'dark' : 'light',
+          // Use slightly darker, desaturated primaries in dark mode to reduce
+          // perceived brightness and glare for users.
           primary: {
-            main: COLORS.primary[600],
+            main: darkMode ? COLORS.primary[700] : COLORS.primary[600],
             light: COLORS.primary[400],
             dark: COLORS.primary[800],
-            contrastText: '#ffffff',
+            contrastText: darkMode ? '#e6e6e6' : '#ffffff',
           },
           secondary: {
-            main: COLORS.secondary[500],
+            main: darkMode ? COLORS.secondary[600] : COLORS.secondary[500],
             light: COLORS.secondary[300],
             dark: COLORS.secondary[700],
             contrastText: '#ffffff',
           },
-          success: {
-            main: COLORS.success,
-          },
-          error: {
-            main: COLORS.error,
-          },
-          warning: {
-            main: COLORS.warning,
-          },
-          info: {
-            main: COLORS.info,
-          },
+          success: { main: COLORS.success },
+          error: { main: COLORS.error },
+          warning: { main: COLORS.warning },
+          info: { main: COLORS.info },
           background: {
-            default: darkMode ? COLORS.neutral[900] : '#ffffff',
-            paper: darkMode ? COLORS.neutral[800] : COLORS.neutral[50],
+            // Make backgrounds darker and reduce strong contrasts in dark mode
+            default: darkMode ? '#06111a' : '#ffffff',
+            paper: darkMode ? '#071824' : COLORS.neutral[50],
           },
           text: {
-            primary: darkMode ? COLORS.neutral[50] : COLORS.neutral[900],
-            secondary: darkMode ? COLORS.neutral[300] : COLORS.neutral[600],
+            // Use softer text colors in dark mode to reduce eye strain
+            primary: darkMode ? COLORS.neutral[200] : COLORS.neutral[900],
+            secondary: darkMode ? COLORS.neutral[400] : COLORS.neutral[600],
           },
+          action: {
+            hover: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'
+          }
         },
         typography: {
           fontFamily: TYPOGRAPHY.fontFamily.base,
@@ -136,6 +135,26 @@ function App() {
           body2: { fontSize: TYPOGRAPHY.fontSize.sm, fontWeight: TYPOGRAPHY.fontWeight.normal },
           button: { textTransform: 'none', fontWeight: TYPOGRAPHY.fontWeight.medium },
         },
+        // Reduce heavy shadows in dark mode which can increase perceived brightness
+        shadows: darkMode
+          ? Array(25).fill('none')
+          : undefined,
+        components: {
+          MuiPaper: {
+            styleOverrides: {
+              root: ({ theme }) => ({
+                backgroundColor: theme.palette.mode === 'dark' ? '#071824' : undefined
+              })
+            }
+          },
+          MuiAppBar: {
+            styleOverrides: {
+              colorPrimary: ({ theme }) => ({
+                backgroundColor: theme.palette.mode === 'dark' ? '#071824' : undefined
+              })
+            }
+          }
+        }
       }),
     [darkMode]
   );
@@ -152,6 +171,22 @@ function App() {
       setDarkMode(savedMode === 'true');
     }
   }, []);
+
+  // Keep document element class in sync so Tailwind "dark:" utilities and
+  // other global dark-mode selectors work across the app (for components
+  // that use Tailwind or plain CSS). This ensures the UI is actually dark
+  // when the MUI theme is in dark mode.
+  React.useEffect(() => {
+    try {
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (err) {
+      // ignore in non-browser environments
+    }
+  }, [darkMode]);
 
   // Seed communities on first load - DISABLED (communities already exist)
   // React.useEffect(() => {
@@ -785,9 +820,9 @@ function App() {
 
                   {/* Map View */}
                   {viewMode === 'map' ? (
-                    <MapView 
+                      <MapView 
                       requests={filteredRequests}
-                      onRequestClick={(request) => {
+                      onRequestClick={(_request) => {
                         // Scroll to request or open details (reserved for future click handling)
                       }}
                     />

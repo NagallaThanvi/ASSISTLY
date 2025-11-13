@@ -21,7 +21,7 @@ export default function CreateCommunityPage() {
   const [error, setError] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const { currentUser, userProfile } = useAuth();
+  const { currentUser, _userProfile } = useAuth();
   const navigate = useNavigate();
 
   // Check if user is admin

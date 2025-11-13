@@ -26,8 +26,8 @@ import {
 import { auth } from '../firebase';
 import { useApp } from '../context/AppContext';
 import { ROUTES, MESSAGES } from '../utils/constants';
-import { Link as RouterLink } from 'react-router-dom';
-import { sanitizeEmail, sanitizeInput } from '../utils/inputSanitization';
+import { Link as _RouterLink } from 'react-router-dom';
+import { sanitizeEmail, _sanitizeInput } from '../utils/inputSanitization';
 import { validateEmail, validatePassword, authRateLimiter } from '../utils/validation';
 import errorTracker from '../utils/errorTracking';
 
@@ -93,7 +93,7 @@ const SignUp = () => {
     setError('');
     
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      const _result = await signInWithPopup(auth, googleProvider);
       if (window.gtag) {
         window.gtag('event', 'sign_up', {
           method: 'google'

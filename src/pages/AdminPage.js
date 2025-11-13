@@ -99,7 +99,7 @@ export default function AdminPage() {
     fetchMembers();
   }, [communityId, pendingRequests]);
 
-  const handleApprove = async (requestId, userId) => {
+  const handleApprove = async (requestId, _userId) => {
     try {
       const requestRef = doc(db, 'membershipRequests', requestId);
       await updateDoc(requestRef, {

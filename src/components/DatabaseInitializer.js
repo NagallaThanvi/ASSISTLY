@@ -25,7 +25,6 @@ import {
 } from '@mui/material';
 import {
   CheckCircle as CheckIcon,
-  Error as ErrorIcon,
   Warning as WarningIcon,
   Build as BuildIcon
 } from '@mui/icons-material';

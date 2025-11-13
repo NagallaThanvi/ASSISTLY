@@ -311,7 +311,28 @@ const RequestModal = ({ onClose }) => {
   };
 
   const handleSelectTemplate = (template) => {
-    setFormData(template);
+    // Merge the template into the existing form data.
+    // Behavior:
+    // - Always apply template.category and template.urgency (so category auto-selects).
+    // - For title/description/location/estimatedTime/contactInfo, only fill if the field
+    //   is currently empty to avoid overwriting user edits.
+    setFormData(prev => {
+      const next = { ...prev };
+
+      // Always set category and urgency from template if provided
+      if (template.category) next.category = template.category;
+      if (template.urgency) next.urgency = template.urgency;
+
+      // Fill other fields only when current value is empty
+      if (template.title && !(prev.title || '').trim()) next.title = template.title;
+      if (template.description && !(prev.description || '').trim()) next.description = template.description;
+      if (template.location && !(prev.location || '').trim()) next.location = template.location;
+      if (template.estimatedTime && !(prev.estimatedTime || '').trim()) next.estimatedTime = template.estimatedTime;
+      if (template.contactInfo && !(prev.contactInfo || '').trim()) next.contactInfo = template.contactInfo;
+
+      return next;
+    });
+
     setShowTemplates(false);
   };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Paper,
@@ -37,13 +37,7 @@ export default function CommunityLeaderboard() {
   const [category, setCategory] = useState('points'); // 'points', 'completed', 'streak'
   const { communityId, userProfile } = useAuth();
 
-  useEffect(() => {
-    if (communityId) {
-      fetchLeaderboard();
-    }
-  }, [communityId, timeframe, category]);
-
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     try {
       // Get all users in the community
@@ -128,7 +122,13 @@ export default function CommunityLeaderboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [communityId, timeframe, category]);
+
+  useEffect(() => {
+    if (communityId) {
+      fetchLeaderboard();
+    }
+  }, [fetchLeaderboard, communityId]);
 
   const getRankColor = (rank) => {
     if (rank === 1) return '#FFD700'; // Gold

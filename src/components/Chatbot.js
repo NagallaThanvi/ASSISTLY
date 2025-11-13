@@ -101,8 +101,8 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      // Analyze intent for better UX
-      const intents = analyzeIntent(messageText);
+  // Analyze intent for better UX (result currently unused but kept for future routing)
+  const _intents = analyzeIntent(messageText);
       // Debug: intents detected and used internally for response routing
 
       // Get bot response

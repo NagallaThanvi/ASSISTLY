@@ -223,8 +223,8 @@ const Dashboard = () => {
           });
         }
 
-        // Impact Achievements
-        if (userStats.impact >= 10) {
+        // Impact Achievements (use requests length computed above to avoid external state deps)
+        if (requests.length >= 10) {
           userAchievements.push({
             title: 'Community Champion',
             description: 'Made an impact on 10+ occasions',
@@ -232,7 +232,7 @@ const Dashboard = () => {
             color: 'secondary'
           });
         }
-        if (userStats.impact >= 50) {
+        if (requests.length >= 50) {
           userAchievements.push({
             title: 'Community Legend',
             description: 'Made an impact on 50+ occasions',
@@ -655,10 +655,10 @@ const Dashboard = () => {
           open={showProfileEditor}
           onClose={() => setShowProfileEditor(false)}
           userData={user}
-          onUpdate={(updatedData) => {
-            // Refresh user data here if needed
-            setShowProfileEditor(false);
-          }}
+          onUpdate={(_updatedData) => {
+              // Refresh user data here if needed
+              setShowProfileEditor(false);
+            }}
         />
       </Box>
     </Container>

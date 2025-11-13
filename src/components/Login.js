@@ -37,7 +37,7 @@ const Login = () => {
   const { showNotification } = useApp();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [authProvider, setAuthProvider] = useState('');
+  const [_authProvider, setAuthProvider] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -106,7 +106,7 @@ const Login = () => {
     setAuthProvider(provider.providerId);
 
     try {
-      const result = await signInWithPopup(auth, provider);
+      const _result = await signInWithPopup(auth, provider);
       if (window.gtag) {
         window.gtag('event', 'login', {
           method: provider.providerId

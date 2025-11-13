@@ -8,17 +8,16 @@ import {
   TextField,
   Button,
   Typography,
-  Avatar,
   Paper,
   IconButton,
-  Divider,
+  
   CircularProgress
 } from '@mui/material';
 import {
   Send as SendIcon,
   Close as CloseIcon
 } from '@mui/icons-material';
-import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/helpers';

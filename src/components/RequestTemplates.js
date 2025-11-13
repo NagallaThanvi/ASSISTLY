@@ -13,7 +13,7 @@ import {
   Box,
   Chip,
   IconButton,
-  Tooltip
+  
 } from '@mui/material';
 import {
   ShoppingCart as GroceryIcon,
@@ -278,7 +278,15 @@ export default function RequestTemplates({ open, onClose, onSelectTemplate }) {
 
   const handleUseTemplate = () => {
     if (selectedTemplate && onSelectTemplate) {
-      onSelectTemplate(selectedTemplate.template);
+      // Merge template content with meta (category, urgency) so the request form
+      // receives category and urgency automatically when a template is chosen.
+      const merged = {
+        ...selectedTemplate.template,
+        // Preserve explicit template meta if present
+        category: selectedTemplate.category || selectedTemplate.template.category || 'General Help',
+        urgency: selectedTemplate.urgency || selectedTemplate.template.urgency || 'medium'
+      };
+      onSelectTemplate(merged);
       onClose();
     }
   };

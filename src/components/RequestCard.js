@@ -29,7 +29,7 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
   const otherUserId = isOwner ? request.claimedByUid : request.createdByUid;
   const otherUserEmail = isOwner ? request.claimedBy : request.createdBy;
   
-  const getStatusColor = () => {
+  const _getStatusColor = () => {
     switch (request.status) {
       case 'open': return 'info';
       case 'claimed': return 'warning';

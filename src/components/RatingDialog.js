@@ -12,7 +12,7 @@ import {
   Alert
 } from '@mui/material';
 import { Star as StarIcon } from '@mui/icons-material';
-import { doc, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+import { doc, updateDoc, _arrayUnion, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const RatingDialog = ({ open, onClose, requestId, requestTitle, ratedUserId, ratedUserEmail, isVolunteer, onRatingSubmitted }) => {

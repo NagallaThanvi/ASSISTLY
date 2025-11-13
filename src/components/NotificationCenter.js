@@ -3,7 +3,6 @@ import {
   Badge,
   IconButton,
   Menu,
-  MenuItem,
   Typography,
   Box,
   Divider,
@@ -18,8 +17,7 @@ import {
   Notifications as NotificationsIcon,
   VolunteerActivism as VolunteerIcon,
   CheckCircle as CompleteIcon,
-  Message as MessageIcon,
-  Close as CloseIcon
+  Message as MessageIcon
 } from '@mui/icons-material';
 import { collection, query, where, orderBy, onSnapshot, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';

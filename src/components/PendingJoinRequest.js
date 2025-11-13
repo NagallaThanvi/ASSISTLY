@@ -7,7 +7,7 @@ import {
   Alert,
   CircularProgress,
   Button,
-  Chip
+  
 } from '@mui/material';
 import {
   HourglassEmpty as PendingIcon,
@@ -26,14 +26,7 @@ const PendingJoinRequest = () => {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
 
-  useEffect(() => {
-    loadJoinRequest();
-    // Poll every 10 seconds to check for updates
-    const interval = setInterval(loadJoinRequest, 10000);
-    return () => clearInterval(interval);
-  }, [user]);
-
-  const loadJoinRequest = async () => {
+  const loadJoinRequest = React.useCallback(async () => {
     if (!user) return;
 
     try {
@@ -57,7 +50,16 @@ const PendingJoinRequest = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, userProfile, refreshUserProfile]);
+
+  useEffect(() => {
+    loadJoinRequest();
+    // Poll every 10 seconds to check for updates
+    const interval = setInterval(loadJoinRequest, 10000);
+    return () => clearInterval(interval);
+  }, [loadJoinRequest]);
+
+  
 
   const handleCancel = async () => {
     if (!window.confirm('Are you sure you want to cancel your join request?')) {
