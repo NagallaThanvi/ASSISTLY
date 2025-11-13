@@ -87,8 +87,9 @@ function App() {
 
   // Create theme based on dark mode
   const theme = React.useMemo(
-    () =>
-      createTheme({
+    () => {
+      const base = createTheme();
+      return createTheme({
         palette: {
           mode: darkMode ? 'dark' : 'light',
           // Use slightly darker, desaturated primaries in dark mode to reduce
@@ -136,9 +137,7 @@ function App() {
           button: { textTransform: 'none', fontWeight: TYPOGRAPHY.fontWeight.medium },
         },
         // Reduce heavy shadows in dark mode which can increase perceived brightness
-        shadows: darkMode
-          ? Array(25).fill('none')
-          : undefined,
+        shadows: darkMode ? Array(25).fill('none') : base.shadows,
         components: {
           MuiPaper: {
             styleOverrides: {
@@ -155,7 +154,8 @@ function App() {
             }
           }
         }
-      }),
+      });
+    },
     [darkMode]
   );
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Typography, Button } from '@mui/material';
 import { logError, ErrorSeverity } from '../services/errorLogger';
 
 class ErrorBoundary extends React.Component {
@@ -29,32 +28,36 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '100vh',
-            padding: 3,
-            textAlign: 'center'
-          }}
-        >
-          <Typography variant="h4" component="h1" gutterBottom>
-            Oops! Something went wrong
-          </Typography>
-          <Typography variant="body1" color="text.secondary" paragraph>
-            We're sorry for the inconvenience. Please try refreshing the page.
-          </Typography>
-          <Button
-            variant="contained"
-            color="primary"
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          padding: '24px',
+          textAlign: 'center',
+          backgroundColor: '#ffffff',
+          color: '#111827',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif'
+        }}>
+          <h1 style={{ fontSize: '1.75rem', marginBottom: '8px' }}>Oops! Something went wrong</h1>
+          <p style={{ marginBottom: '16px', color: '#4b5563' }}>We're sorry for the inconvenience. Please try refreshing the page.</p>
+          <button
             onClick={() => window.location.reload()}
-            sx={{ mt: 2 }}
+            style={{
+              padding: '10px 16px',
+              backgroundColor: '#667eea',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '1rem',
+              fontWeight: 600
+            }}
           >
             Refresh Page
-          </Button>
-        </Box>
+          </button>
+        </div>
       );
     }
 
