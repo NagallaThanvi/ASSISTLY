@@ -174,4 +174,5 @@ export default {
   BORDER_RADIUS,
   SHADOWS,
   TRANSITIONS,
+  DARK,
 };
