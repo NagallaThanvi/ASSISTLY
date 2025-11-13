@@ -530,7 +530,7 @@ const Dashboard = () => {
             <Typography variant="h4" gutterBottom>
               Welcome, {user.displayName || user.email}!
             </Typography>
-            <Typography variant="body1" color="textSecondary">
+            <Typography variant="body1" color="text.secondary">
               Member since {new Date(user.metadata.creationTime).toLocaleDateString()}
             </Typography>
           </Grid>
@@ -574,7 +574,7 @@ const Dashboard = () => {
                 ))
               ) : (
                 <div className="col-span-full">
-                  <Typography align="center" color="textSecondary">
+                  <Typography align="center" color="text.secondary">
                     You haven't created any requests yet
                   </Typography>
                 </div>
@@ -593,7 +593,7 @@ const Dashboard = () => {
                 ))
               ) : (
                 <div className="col-span-full">
-                  <Typography align="center" color="textSecondary">
+                  <Typography align="center" color="text.secondary">
                     You haven't helped with any requests yet
                   </Typography>
                 </div>
@@ -620,7 +620,7 @@ const Dashboard = () => {
                   </React.Fragment>
                 ))
               ) : (
-                <Typography align="center" color="textSecondary">
+                <Typography align="center" color="text.secondary">
                   Keep helping others to earn achievements!
                 </Typography>
               )}

@@ -84,7 +84,8 @@ export const generateBrandingCSS = (branding) => {
     }
     
     .community-header {
-      background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%);
+      background: ${colors.primary};
+      color: white;
     }
     
     .community-button-primary {
@@ -256,7 +257,7 @@ export const COLOR_PRESETS = {
 export const getBrandingPreview = (branding) => {
   return `
     <div style="
-      background: linear-gradient(135deg, ${branding.colors.primary} 0%, ${branding.colors.secondary} 100%);
+      background-color: ${branding.colors.primary};
       padding: 20px;
       border-radius: 8px;
       color: white;

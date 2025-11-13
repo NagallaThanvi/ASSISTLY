@@ -271,7 +271,7 @@ const AdminSignupFlow = () => {
           elevation={3}
           sx={{
             p: 4,
-            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+            backgroundColor: 'background.paper',
             border: '2px solid',
             borderColor: 'primary.main'
           }}
@@ -284,7 +284,7 @@ const AdminSignupFlow = () => {
                   width: 80,
                   height: 80,
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  bgcolor: 'primary.main',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -401,10 +401,8 @@ const AdminSignupFlow = () => {
                   disabled={loading}
                   sx={{
                     py: 1.5,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-                    }
+                    bgcolor: 'primary.main',
+                    '&:hover': { bgcolor: 'primary.dark' }
                   }}
                 >
                   Next: Setup Community
@@ -482,10 +480,8 @@ const AdminSignupFlow = () => {
                     sx={{
                       flex: 1,
                       py: 1.5,
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-                      }
+                      bgcolor: 'primary.main',
+                      '&:hover': { bgcolor: 'primary.dark' }
                     }}
                   >
                     {loading ? <CircularProgress size={24} /> : 'Create Admin & Community'}

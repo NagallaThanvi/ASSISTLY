@@ -205,7 +205,7 @@ const Login = () => {
           <Typography variant="h3" component="h1" gutterBottom color="primary" sx={{ fontWeight: 'bold' }}>
             Assistly
           </Typography>
-          <Typography variant="h5" gutterBottom color="textSecondary">
+          <Typography variant="h5" gutterBottom color="text.secondary">
             Your trusted community assistance platform
           </Typography>
           <Box sx={{ my: 4 }}>
@@ -359,18 +359,12 @@ const Login = () => {
           <Button
             component={RouterLink}
             to="/admin-login"
-            variant="outlined"
+            variant="contained"
             color="secondary"
             fullWidth
             sx={{
               py: 1.5,
-              borderWidth: 2,
-              fontWeight: 600,
-              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
-              '&:hover': {
-                borderWidth: 2,
-                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-              }
+              fontWeight: 600
             }}
           >
             🔐 Admin Login
@@ -382,7 +376,7 @@ const Login = () => {
 
         {/* Terms and Privacy */}
         <Box sx={{ mt: 3, textAlign: 'center' }}>
-          <Typography variant="caption" color="textSecondary">
+          <Typography variant="caption" color="text.secondary">
             By signing in, you agree to our{' '}
             <Link href="/terms" underline="hover" target="_blank">
               Terms of Service

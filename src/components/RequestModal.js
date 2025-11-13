@@ -13,7 +13,8 @@ import {
   Chip,
   Paper,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Slide
 } from '@mui/material';
 import { MyLocation as MyLocationIcon, Close as CloseIcon, AutoAwesome as TemplateIcon } from '@mui/icons-material';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
@@ -67,6 +68,10 @@ function LocationMarker({ position, setPosition }) {
 
   return position === null ? null : <Marker position={position} />;
 }
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 const RequestModal = ({ onClose }) => {
   const { user, communityId } = useAuth();
@@ -344,6 +349,8 @@ const RequestModal = ({ onClose }) => {
         maxWidth="sm" 
         fullWidth
         aria-labelledby="request-dialog-title"
+        TransitionComponent={Transition}
+        keepMounted
       >
         <DialogTitle id="request-dialog-title">
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

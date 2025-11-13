@@ -245,7 +245,7 @@ const SignUp = () => {
           <Typography variant="h3" component="h1" gutterBottom color="primary" sx={{ fontWeight: 'bold' }}>
             Join Our Community
           </Typography>
-          <Typography variant="h5" gutterBottom color="textSecondary">
+          <Typography variant="h5" gutterBottom color="text.secondary">
             Make a Difference in Your Neighborhood
           </Typography>
           <Box sx={{ my: 4 }}>
@@ -446,18 +446,12 @@ const SignUp = () => {
         <Box sx={{ textAlign: 'center' }}>
           <Button
             onClick={() => navigate('/admin-login')}
-            variant="outlined"
+            variant="contained"
             color="secondary"
             fullWidth
             sx={{
               py: 1.5,
-              borderWidth: 2,
-              fontWeight: 600,
-              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
-              '&:hover': {
-                borderWidth: 2,
-                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-              }
+              fontWeight: 600
             }}
           >
             🔐 Admin Login

@@ -41,7 +41,7 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
 
   return (
     <>
-      <article className="bg-white dark:bg-slate-800 dark:border dark:border-slate-700 rounded-xl shadow dark:shadow-lg p-4 flex flex-col h-full relative transition-colors">
+      <article className="bg-white dark:bg-slate-800 dark:border dark:border-slate-700 rounded-xl shadow-sm dark:shadow-lg p-4 flex flex-col h-full relative transition-colors transition-transform hover:-translate-y-0.5 hover:shadow-md">
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 break-words">{request.title}</h3>

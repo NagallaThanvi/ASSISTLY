@@ -211,9 +211,10 @@ export default function CommunityPage() {
               size="large"
               onClick={handleJoinRequest}
               sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                bgcolor: 'primary.main',
                 px: 4,
-                py: 1.5
+                py: 1.5,
+                '&:hover': { bgcolor: 'primary.dark' }
               }}
             >
               Request to Join
@@ -256,8 +257,9 @@ export default function CommunityPage() {
                   startIcon={<AddIcon />}
                   onClick={() => setShowRequestModal(true)}
                   sx={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white'
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    '&:hover': { bgcolor: 'primary.dark' }
                   }}
                 >
                   New Request

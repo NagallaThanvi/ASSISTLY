@@ -298,12 +298,10 @@ const CommunityAdminDashboard = () => {
               To view statistics and manage your community, you need to create a community first.
             </Typography>
             <Button
-              variant="contained"
+              variant="contained" 
               size="large"
               onClick={() => setActiveTab(1)}
-              sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              }}
+              sx={{ bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.dark' } }}
             >
               Go to Communities Tab
             </Button>

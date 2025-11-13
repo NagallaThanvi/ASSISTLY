@@ -10,7 +10,8 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  LinearProgress
+  LinearProgress,
+  Slide
 } from '@mui/material';
 import {
   LocationOn as LocationIcon,
@@ -34,6 +35,10 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
   return R * c; // Distance in meters
 };
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 const LocationVerification = ({ 
   open, 
@@ -128,7 +133,7 @@ const LocationVerification = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth TransitionComponent={Transition} keepMounted>
       <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <MyLocationIcon color="primary" />

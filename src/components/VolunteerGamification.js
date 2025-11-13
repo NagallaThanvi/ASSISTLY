@@ -85,7 +85,7 @@ const VolunteerGamification = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Level Card */}
-      <Card sx={{ mb: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
+      <Card sx={{ mb: 3, bgcolor: 'primary.main', color: 'common.white' }}>
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -203,7 +203,9 @@ const VolunteerGamification = () => {
                       sx={{
                         p: 2,
                         textAlign: 'center',
-                        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+                        bgcolor: 'background.paper',
+                        border: '1px solid',
+                        borderColor: 'divider',
                         cursor: 'pointer',
                         transition: 'transform 0.2s',
                         '&:hover': {

@@ -106,7 +106,7 @@ const ForgotPassword = () => {
 
           {!success ? (
             <>
-              <Typography variant="body1" align="center" color="textSecondary" sx={{ mb: 3 }}>
+              <Typography variant="body1" align="center" sx={{ color: 'text.secondary', mb: 3 }}>
                 Enter your email address and we'll send you instructions to reset your password.
               </Typography>
 

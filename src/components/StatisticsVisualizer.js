@@ -23,7 +23,7 @@ const StatCard = ({ title, value, total, color, description }) => {
   return (
     <Card>
       <CardContent>
-        <Typography color="textSecondary" gutterBottom>
+        <Typography color="text.secondary" gutterBottom>
           {title}
         </Typography>
         <Typography variant="h4" gutterBottom>
@@ -37,7 +37,7 @@ const StatCard = ({ title, value, total, color, description }) => {
               color={color}
               sx={{ height: 8, borderRadius: 4 }}
             />
-            <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
               {description || `${percentage}% of total`}
             </Typography>
           </Box>
@@ -57,10 +57,10 @@ const ActivityTimeline = ({ activities }) => {
             {index < activities.length - 1 && <TimelineConnector />}
           </TimelineSeparator>
           <TimelineContent>
-            <Typography variant="body2" color="textPrimary">
+            <Typography variant="body2" color="text.primary">
               {activity.title}
             </Typography>
-            <Typography variant="caption" color="textSecondary">
+            <Typography variant="caption" color="text.secondary">
               {activity.date}
             </Typography>
           </TimelineContent>

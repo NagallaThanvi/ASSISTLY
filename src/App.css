@@ -23,8 +23,8 @@ body {
 
 /* Header Styles */
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background-color: #ffffff;
+  color: #111827;
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
@@ -172,10 +172,6 @@ body {
   font-size: 2.5rem;
   color: #333;
   margin-bottom: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .hero-description {
@@ -224,7 +220,7 @@ body {
 }
 
 .demo-badge {
-  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  background-color: #ff6b35;
   color: white;
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
@@ -377,8 +373,8 @@ body {
 
 /* Stats Section */
 .stats-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background-color: #eef2ff;
+  color: #1f2937;
   padding: 2rem;
   border-radius: 12px;
   margin-bottom: 2rem;

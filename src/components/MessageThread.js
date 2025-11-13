@@ -10,7 +10,7 @@ import {
   Typography,
   Paper,
   IconButton,
-  
+  Slide,
   CircularProgress
 } from '@mui/material';
 import {
@@ -21,6 +21,10 @@ import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'f
 import { db } from '../firebase';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/helpers';
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 const MessageThread = ({ open, onClose, requestId, requestTitle, otherUserId, otherUserEmail }) => {
   const { user } = useAuth();
@@ -106,7 +110,7 @@ const MessageThread = ({ open, onClose, requestId, requestTitle, otherUserId, ot
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth TransitionComponent={Transition} keepMounted>
       <DialogTitle>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box>

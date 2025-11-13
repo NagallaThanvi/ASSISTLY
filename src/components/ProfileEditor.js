@@ -183,7 +183,7 @@ const ProfileEditor = ({ open, onClose, userData, onUpdate }) => {
                 <PhotoCameraIcon />
               </IconButton>
             </label>
-            <Typography variant="caption" display="block" color="textSecondary">
+            <Typography variant="caption" display="block" sx={{ color: 'text.secondary' }}>
               Click to change profile photo
             </Typography>
           </Box>

@@ -230,10 +230,8 @@ export default function Chatbot() {
           bottom: 24,
           right: 24,
           zIndex: 1300,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          '&:hover': {
-            background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-          }
+          bgcolor: 'primary.main',
+          '&:hover': { bgcolor: 'primary.dark' }
         }}
       >
         {isOpen ? <CloseIcon /> : <ChatIcon />}
@@ -261,8 +259,8 @@ export default function Chatbot() {
           {/* Header */}
           <Box
             sx={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
+              bgcolor: 'primary.main',
+              color: 'common.white',
               p: 2,
               display: 'flex',
               alignItems: 'center',

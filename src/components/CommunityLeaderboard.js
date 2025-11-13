@@ -172,12 +172,12 @@ export default function CommunityLeaderboard() {
   return (
     <Box>
       {/* Header */}
-      <Paper elevation={3} sx={{ p: 3, mb: 3, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+      <Paper elevation={3} sx={{ p: 3, mb: 3, bgcolor: 'primary.main', color: 'common.white' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <TrophyIcon sx={{ fontSize: 48, color: '#FFD700' }} />
             <Box>
-              <Typography variant="h4" fontWeight="700" color="white">
+              <Typography variant="h4" fontWeight="700" color="inherit">
                 Community Leaderboard
               </Typography>
               <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>

@@ -176,17 +176,17 @@ export default function CreateCommunityPage() {
               variant="contained"
               disabled={loading || !name.trim() || !isAdmin}
               sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                bgcolor: 'primary.main',
                 color: 'white',
                 px: 4,
                 py: 1.5,
                 borderRadius: 2,
                 fontWeight: 600,
                 textTransform: 'none',
-                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                boxShadow: 2,
                 '&:hover': {
                   transform: 'translateY(-2px)',
-                  boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)'
+                  bgcolor: 'primary.dark'
                 }
               }}
             >
