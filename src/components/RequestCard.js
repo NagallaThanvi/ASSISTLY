@@ -41,10 +41,10 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
 
   return (
     <>
-      <article className="bg-white rounded-xl shadow p-4 flex flex-col h-full relative">
+      <article className="bg-white dark:bg-slate-800 dark:border dark:border-slate-700 rounded-xl shadow dark:shadow-lg p-4 flex flex-col h-full relative transition-colors">
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-slate-800 break-words">{request.title}</h3>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 break-words">{request.title}</h3>
           </div>
           <div>
             <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded ${
@@ -58,7 +58,7 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
 
         {canMessage && (
           <div className="absolute top-3 right-3">
-            <button aria-label="Send Message" onClick={() => setShowMessageThread(true)} className="p-1 rounded text-slate-700 hover:bg-slate-100">
+            <button aria-label="Send Message" onClick={() => setShowMessageThread(true)} className="p-1 rounded text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
               <MessageIcon fontSize="small" />
             </button>
           </div>
@@ -66,13 +66,13 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
 
         {request.category && (
           <div className="mb-2">
-            <span className="inline-block text-xs px-2 py-1 rounded border border-slate-200 text-slate-700">{request.category}</span>
+            <span className="inline-block text-xs px-2 py-1 rounded border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 dark:bg-slate-700">{request.category}</span>
           </div>
         )}
 
-        <p className="text-sm text-slate-600 mb-3 line-clamp-3">{request.description}</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-3">{request.description}</p>
 
-        <div className="border-t border-slate-100 pt-3 mt-auto">
+        <div className="border-t border-slate-100 dark:border-slate-700 pt-3 mt-auto">
           <div className="flex flex-col gap-2">
             {(request.location?.address || request.location) && (
               <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -102,15 +102,15 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
             )}
 
             {request.rating && (
-              <div className="flex items-center gap-2 mt-1 text-sm text-slate-600">
+              <div className="flex items-center gap-2 mt-1 text-sm text-slate-600 dark:text-slate-400">
                 <StarIcon fontSize="small" className="text-yellow-500" />
-                <span> {request.rating.score} {request.rating.review && <span className="text-xs text-slate-500">"{request.rating.review}"</span>}</span>
+                <span> {request.rating.score} {request.rating.review && <span className="text-xs text-slate-500 dark:text-slate-500">"{request.rating.review}"</span>}</span>
               </div>
             )}
 
             {request.contactInfo && (isOwner || isVolunteer) && (
-              <div className="mt-2 p-2 bg-slate-50 rounded text-sm text-slate-700">
-                <div className="text-xs text-slate-500">Contact Info:</div>
+              <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-700 rounded text-sm text-slate-700 dark:text-slate-300">
+                <div className="text-xs text-slate-500 dark:text-slate-400">Contact Info:</div>
                 <div>{request.contactInfo}</div>
               </div>
             )}
@@ -120,15 +120,15 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
             {!isOwner && !isCompleted && (
               <>
                 {!isClaimed && (
-                  <button onClick={() => onVolunteer(request.id)} className="w-full bg-blue-600 text-white px-3 py-2 rounded-md">Volunteer to Help</button>
+                  <button onClick={() => onVolunteer(request.id)} className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-3 py-2 rounded-md transition-colors">Volunteer to Help</button>
                 )}
 
                 {isVolunteer && (
-                  <button onClick={() => setShowLocationVerification(true)} className="w-full bg-emerald-600 text-white px-3 py-2 rounded-md">Mark as Complete</button>
+                  <button onClick={() => setShowLocationVerification(true)} className="w-full bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600 text-white px-3 py-2 rounded-md transition-colors">Mark as Complete</button>
                 )}
 
                 {isClaimed && !isVolunteer && (
-                  <div className="text-center text-sm text-slate-500">Already claimed by a volunteer</div>
+                  <div className="text-center text-sm text-slate-500 dark:text-slate-400">Already claimed by a volunteer</div>
                 )}
               </>
             )}
@@ -142,15 +142,15 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
                     <button onClick={() => onVerifyCompletion(request.id, false)} className="flex-1 border border-red-300 text-red-600 px-3 py-2 rounded-md">✗ Reject</button>
                   </div>
                 )}
-                {isVolunteer && <div className="text-center text-xs text-slate-500">Waiting for resident to verify completion</div>}
+                {isVolunteer && <div className="text-center text-xs text-slate-500 dark:text-slate-400">Waiting for resident to verify completion</div>}
               </div>
             )}
 
             {isCompleted && (
               <div className="flex flex-col gap-2">
-                <div className="text-center font-bold text-emerald-700">✓ Completed</div>
+                <div className="text-center font-bold text-emerald-700 dark:text-emerald-400">✓ Completed</div>
                 {canRate && (
-                  <button onClick={() => setShowRatingDialog(true)} className="w-full border border-slate-200 px-3 py-2 rounded-md">Rate Volunteer</button>
+                  <button onClick={() => setShowRatingDialog(true)} className="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 rounded-md hover:dark:bg-slate-600 transition-colors">Rate Volunteer</button>
                 )}
               </div>
             )}

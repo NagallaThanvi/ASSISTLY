@@ -145,14 +145,25 @@ export const DARK = {
   background: {
     default: '#06111a', // deep navy-greenish to reduce blue glare
     paper: '#071824',
+    elevated: '#0d1f2d', // for cards and panels
   },
   text: {
     primary: '#e6eef6',
-    secondary: '#9fb0c3'
+    secondary: '#9fb0c3',
+    tertiary: '#6b7a92',
+  },
+  border: {
+    light: '#1a2e3a',
+    default: '#2a3a4a',
   },
   primaryMuted: '#3f4aa6', // slightly muted primary for dark surfaces
   shadows: {
-    subtle: '0 1px 2px rgba(0,0,0,0.6)'
+    subtle: '0 1px 2px rgba(0,0,0,0.6)',
+    sm: '0 2px 4px rgba(0,0,0,0.8)',
+  },
+  action: {
+    hover: 'rgba(255,255,255,0.08)',
+    selected: 'rgba(255,255,255,0.12)',
   }
 };
 

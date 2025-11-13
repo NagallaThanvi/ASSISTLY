@@ -80,7 +80,7 @@ const RequestDetail = () => {
           <div className="px-3 py-1 rounded-full text-sm font-medium text-white" style={{ backgroundColor: request.status === 'open' ? '#0284c7' : request.status === 'claimed' ? '#f59e0b' : '#10b981' }}>{(request.status || '').toUpperCase()}</div>
         </div>
 
-        <div className="border-b border-gray-100 pb-4 mb-4" />
+        <div className="border-b border-gray-100 dark:border-gray-700 pb-4 mb-4" />
 
         <p className="text-gray-700 dark:text-gray-200 mb-4">{request.description}</p>
 
@@ -101,7 +101,7 @@ const RequestDetail = () => {
             onChange={(e) => setComment(e.target.value)}
             placeholder="Optional comment"
             rows={4}
-            className="mt-3 w-full rounded-md border border-gray-200 focus:ring-2 focus:ring-indigo-300 p-2 bg-white text-gray-900 dark:bg-gray-700 dark:text-gray-100"
+            className="mt-3 w-full rounded-md border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-indigo-300 dark:focus:ring-indigo-500 p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             aria-label="Optional comment"
           />
 
@@ -116,7 +116,7 @@ const RequestDetail = () => {
             </button>
 
             <button
-              className="inline-flex items-center justify-center border border-gray-300 text-gray-700 px-3 py-2 rounded-md hover:bg-gray-50"
+              className="inline-flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
               type="button"
               onClick={() => navigate(-1)}
             >
