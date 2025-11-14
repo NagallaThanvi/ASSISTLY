@@ -171,7 +171,7 @@ service cloud.firestore {
             isAdminOfCommunity(notifRequestCommunityId())
           )
         ) ||
-        (
+        ( isAuthenticated() &&
           notifRequestId() != null &&
           request.resource.data.type == 'new_offer' &&
           isMemberOfCommunity(notifRequestCommunityId()) &&
