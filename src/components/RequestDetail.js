@@ -77,7 +77,7 @@ const RequestDetail = () => {
             <div className="text-sm text-gray-500">Posted by {request.postedBy || 'Anonymous'}</div>
           </div>
           <div className="flex-1" />
-          <div className="px-3 py-1 rounded-full text-sm font-medium text-white" style={{ backgroundColor: request.status === 'open' ? '#0284c7' : request.status === 'claimed' ? '#f59e0b' : '#10b981' }}>{(request.status || '').toUpperCase()}</div>
+          <div className="px-3 py-1 rounded-full text-sm font-medium text-white" style={{ backgroundColor: request.status === 'open' ? '#0284c7' : request.status === 'claimed' ? '#f59e0b' : request.status === 'pending_completion' ? '#7c3aed' : '#10b981' }}>{(request.status || '').toUpperCase()}</div>
         </div>
 
         <div className="border-b border-gray-100 dark:border-gray-700 pb-4 mb-4" />

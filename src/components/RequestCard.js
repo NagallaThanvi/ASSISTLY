@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Message as MessageIcon,
   AccessTime as TimeIcon,
@@ -11,8 +11,10 @@ import { useAuth } from '../context/AuthContext';
 import MessageThread from './MessageThread';
 import RatingDialog from './RatingDialog';
 import LocationVerification from './LocationVerification';
+import { db } from '../firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 
-const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) => {
+const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion, onReviewOffers }) => {
   const { user } = useAuth();
   const [showMessageThread, setShowMessageThread] = useState(false);
   const [showRatingDialog, setShowRatingDialog] = useState(false);
@@ -22,6 +24,28 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
   const isCompleted = request.status === 'completed';
   const isOwner = request.createdByUid === user?.uid;
   const isVolunteer = request.claimedByUid === user?.uid;
+  const isOpen = request.status === 'open';
+  const [offersCount, setOffersCount] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadOffersCount() {
+      try {
+        if (isOwner && isOpen && request?.id) {
+          const snap = await getDocs(query(collection(db, 'requests', request.id, 'offers'), where('status', '==', 'pending')));
+          if (!cancelled) setOffersCount(snap.size || 0);
+        } else {
+          if (!cancelled) setOffersCount(0);
+        }
+      } catch (_e) {
+        if (!cancelled) setOffersCount(0);
+      }
+    }
+    loadOffersCount();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOwner, isOpen, request?.id]);
   
   const canMessage = (isOwner && (isClaimed || isPendingCompletion)) || (isVolunteer && (isClaimed || isPendingCompletion));
   const canRate = isCompleted && isOwner && !request.rating; // Only owner can rate volunteer
@@ -81,6 +105,10 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
               </div>
             )}
 
+            {isOwner && isOpen && !isCompleted && typeof onReviewOffers === 'function' && (
+              <button onClick={() => onReviewOffers(request.id)} className="w-full border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3 py-2 rounded-md hover:dark:bg-slate-600 transition-colors">{`Review Offers${offersCount ? ` (${offersCount})` : ''}`}</button>
+            )}
+
             <div className="flex items-center gap-2">
               <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded ${
                 request.urgency === 'high' ? 'bg-red-100 text-red-800' : request.urgency === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-emerald-100 text-emerald-800'
@@ -97,7 +125,7 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
 
             <div className="text-xs text-slate-500">Posted {formatDate(request.timestamp || request.createdAt)}</div>
 
-            {isClaimed && (
+            {(isClaimed || isPendingCompletion) && (
               <div className="text-sm text-slate-700"><strong>Volunteer:</strong> {request.claimedBy || request.claimedByEmail?.split('@')[0] || '—'}</div>
             )}
 
@@ -119,15 +147,15 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
           <div className="mt-3 grid grid-cols-1 gap-2">
             {!isOwner && !isCompleted && (
               <>
-                {!isClaimed && (
-                  <button onClick={() => onVolunteer(request.id)} className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-3 py-2 rounded-md transition-colors">Volunteer to Help</button>
+                {isOpen && typeof onVolunteer === 'function' && (
+                  <button onClick={() => onVolunteer(request.id)} className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-3 py-2 rounded-md transition-colors">Offer to Help</button>
                 )}
 
-                {isVolunteer && (
+                {isVolunteer && isClaimed && typeof onComplete === 'function' && (
                   <button onClick={() => setShowLocationVerification(true)} className="w-full bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600 text-white px-3 py-2 rounded-md transition-colors">Mark as Complete</button>
                 )}
 
-                {isClaimed && !isVolunteer && (
+                {!isOpen && !isVolunteer && (
                   <div className="text-center text-sm text-slate-500 dark:text-slate-400">Already claimed by a volunteer</div>
                 )}
               </>
@@ -136,7 +164,7 @@ const RequestCard = ({ request, onVolunteer, onComplete, onVerifyCompletion }) =
             {isPendingCompletion && (
               <div className="flex flex-col gap-2">
                 <div className="text-center font-bold text-purple-700">⏳ Pending Verification</div>
-                {canVerify && (
+                {canVerify && typeof onVerifyCompletion === 'function' && (
                   <div className="flex gap-2">
                     <button onClick={() => onVerifyCompletion(request.id, true)} className="flex-1 bg-emerald-600 text-white px-3 py-2 rounded-md">✓ Verify</button>
                     <button onClick={() => onVerifyCompletion(request.id, false)} className="flex-1 border border-red-300 text-red-600 px-3 py-2 rounded-md">✗ Reject</button>

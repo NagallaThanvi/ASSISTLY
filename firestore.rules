@@ -74,22 +74,46 @@ service cloud.firestore {
       allow create: if isAuthenticated() && 
                      request.resource.data.createdByUid == request.auth.uid;
       
-      // Update: Owner can always update, or member of community can claim/update
+      // Update: Owner or admin can always update. Members can update only if they are the assigned claimer (no direct claiming).
       allow update: if isAuthenticated() && 
                      (resource.data.createdByUid == request.auth.uid ||
                       isAdminOfCommunity(resource.data.communityId) ||
+                      // Allow the assigned volunteer to update (e.g., mark complete), but not to claim directly
                       (isMemberOfCommunity(resource.data.communityId) &&
-                       // When claiming: must be open status and not own request
-                       ((resource.data.status == 'open' && 
-                         request.resource.data.claimedByUid == request.auth.uid &&
-                         resource.data.createdByUid != request.auth.uid) ||
-                        // When updating already claimed request: must be the claimer
-                        (resource.data.claimedByUid == request.auth.uid))));
+                       resource.data.claimedByUid == request.auth.uid));
       
       // Delete: Only owner or admin can delete
       allow delete: if isAuthenticated() && 
                      (resource.data.createdByUid == request.auth.uid ||
                       isAdminOfCommunity(resource.data.communityId));
+    }
+
+    // Request Offers subcollection for owner-approval model
+    match /requests/{requestId}/offers/{offerId} {
+      function requestCommunityId() {
+        return get(/databases/$(database)/documents/requests/$(requestId)).data.communityId;
+      }
+      function requestOwnerUid() {
+        return get(/databases/$(database)/documents/requests/$(requestId)).data.createdByUid;
+      }
+
+      // Read offers: owner, admin, or the author of the offer
+      allow read: if isAuthenticated() && (
+                    requestOwnerUid() == request.auth.uid ||
+                    isAdminOfCommunity(requestCommunityId()) ||
+                    resource.data.userId == request.auth.uid
+                  );
+
+      // Create an offer: community member offering themselves
+      allow create: if isAuthenticated() &&
+                     isMemberOfCommunity(requestCommunityId()) &&
+                     request.resource.data.userId == request.auth.uid;
+
+      // Update/Delete: author of offer, request owner, or community admin can update
+      allow update, delete: if isAuthenticated() &&
+                             (resource.data.userId == request.auth.uid ||
+                              requestOwnerUid() == request.auth.uid ||
+                              isAdminOfCommunity(requestCommunityId()));
     }
 
     // User profiles - users can read own, admins can read community members
@@ -120,8 +144,37 @@ service cloud.firestore {
 
     // Notifications
     match /notifications/{notificationId} {
+      function notifRequestId() {
+        return request.resource.data.requestId;
+      }
+      function notifRequestCommunityId() {
+        return notifRequestId() != null ? get(/databases/$(database)/documents/requests/$(notifRequestId())).data.communityId : null;
+      }
+      function notifRequestOwnerUid() {
+        return notifRequestId() != null ? get(/databases/$(database)/documents/requests/$(notifRequestId())).data.createdByUid : null;
+      }
+      function notifRequestClaimerUid() {
+        return notifRequestId() != null ? get(/databases/$(database)/documents/requests/$(notifRequestId())).data.claimedByUid : null;
+      }
+
+      // Recipients can read their notifications
       allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow write: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+
+      // Create: allow recipient to create for themselves OR
+      // allow request owner/assigned volunteer/admin to create notifications for others related to that request
+      allow create: if isAuthenticated() && (
+        request.resource.data.userId == request.auth.uid ||
+        (
+          notifRequestId() != null && (
+            notifRequestOwnerUid() == request.auth.uid ||
+            notifRequestClaimerUid() == request.auth.uid ||
+            isAdminOfCommunity(notifRequestCommunityId())
+          )
+        )
+      );
+
+      // Update/Delete: only the recipient can modify their notification (e.g., mark as read)
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // Activity Logs (Admin only)

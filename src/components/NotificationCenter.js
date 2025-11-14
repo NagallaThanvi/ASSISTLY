@@ -92,6 +92,16 @@ const NotificationCenter = () => {
     switch (type) {
       case 'request_claimed':
         return <VolunteerIcon color="primary" />;
+      case 'new_offer':
+        return <VolunteerIcon color="info" />;
+      case 'offer_accepted':
+        return <CompleteIcon color="success" />;
+      case 'offer_declined':
+        return <NotificationsIcon color="warning" />;
+      case 'verify_completion':
+        return <CompleteIcon color="warning" />;
+      case 'completion_rejected':
+        return <NotificationsIcon color="error" />;
       case 'request_completed':
         return <CompleteIcon color="success" />;
       case 'new_message':

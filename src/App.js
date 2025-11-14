@@ -5,7 +5,7 @@ import { COLORS, TYPOGRAPHY } from './utils/designSystem';
 import { alpha } from '@mui/material/styles';
 
 import { VolunteerActivism as VolunteerIcon, Home as HomeIcon, Brightness4 as DarkModeIcon, Brightness7 as LightModeIcon, Map as MapIcon, ViewList as ListIcon, Favorite as FavoriteIcon } from '@mui/icons-material';
-import { collection, doc, query, where, orderBy, onSnapshot, updateDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, query, where, orderBy, onSnapshot, updateDoc, arrayUnion, serverTimestamp, addDoc, getDocs } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from './firebase';
 import { useApp } from './context/AppContext';
@@ -43,6 +43,8 @@ import Chatbot from './components/Chatbot';
 import DatabaseInitializer from './components/DatabaseInitializer';
 import TailwindDemo from './pages/TailwindDemo';
 import PageTransition from './components/PageTransition';
+import RequestDetailModal from './components/RequestDetailModal';
+import RequestOffersModal from './components/RequestOffersModal';
 
 // Meta tags setup
 document.title = process.env.REACT_APP_NAME || 'Assistly';
@@ -87,6 +89,8 @@ function App() {
   const [darkMode, setDarkMode] = React.useState(false);
   const [viewMode, setViewMode] = React.useState('list'); // 'list' or 'map'
   const [showDbInitializer, setShowDbInitializer] = React.useState(false);
+  const [selectedRequest, setSelectedRequest] = React.useState(null);
+  const [offersForRequestId, setOffersForRequestId] = React.useState(null);
 
   // Create theme based on dark mode
   const theme = React.useMemo(
@@ -322,11 +326,15 @@ function App() {
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter(req => 
-        req.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        req.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        req.location?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(req => {
+        const title = (req.title || '').toLowerCase();
+        const desc = (req.description || '').toLowerCase();
+        const loc = (typeof req.location === 'string' 
+          ? (req.location || '') 
+          : (req.location?.address || '')).toLowerCase();
+        return title.includes(term) || desc.includes(term) || loc.includes(term);
+      });
     }
 
     // Category filter
@@ -392,53 +400,59 @@ function App() {
     setSortBy('newest');
   };
 
+  // Owner-approval model: Volunteers submit an offer instead of instant claim
   const handleVolunteer = async (requestId) => {
     if (!user) return;
 
     try {
-      const requestRef = doc(db, 'requests', requestId);
       const request = requests.find(req => req.id === requestId);
-      
-      // Check if request is already claimed
+
+      if (!request) return;
+
       if (request?.status !== 'open') {
-        showNotification('This request has already been claimed by another volunteer', 'warning');
+        showNotification('Offers are closed for this request', 'warning');
         return;
       }
-      
-      // Check if user is trying to claim their own request
+
       if (request?.createdByUid === user.uid) {
-        showNotification('You cannot volunteer for your own request', 'warning');
+        showNotification('You cannot offer to your own request', 'warning');
         return;
       }
-      
-      await updateDoc(requestRef, {
-        status: 'claimed',
-        claimedByUid: user.uid,
-        claimedBy: user.email,
-        claimedAt: serverTimestamp(),
-        history: arrayUnion({ 
-          type: 'claimed',
-          by: user.email,
-          byUid: user.uid,
-          at: new Date().toISOString()
-        })
+
+      // Prevent duplicate pending offer from the same user
+      const existingSnap = await getDocs(query(collection(db, 'requests', requestId, 'offers'), where('userId', '==', user.uid), where('status', '==', 'pending')));
+      if (!existingSnap.empty) {
+        showNotification('You already sent an offer for this request', 'info');
+        return;
+      }
+
+      await addDoc(collection(db, 'requests', requestId, 'offers'), {
+        userId: user.uid,
+        userEmail: user.email,
+        createdAt: serverTimestamp(),
+        status: 'pending'
       });
-      
-      // Track early claim for gamification
-      if (request?.createdAt) {
-        await trackEarlyClaim(user.uid, request.createdAt);
-      }
-      
-      // Get the request details to open chat
-      if (request) {
-        setOpenChatRequest(request);
-      }
-      
-      showNotification('Request claimed! Chat opened with requester.');
+
+      // Notify the request owner
+      await addDoc(collection(db, 'notifications'), {
+        userId: request.createdByUid,
+        type: 'new_offer',
+        title: 'New offer received',
+        message: `${user.email} offered help on "${request.title}"`,
+        createdAt: serverTimestamp(),
+        read: false,
+        requestId: requestId
+      });
+
+      showNotification('Offer sent to the requester');
     } catch (error) {
-      console.error('Error claiming request:', error);
-      showNotification('Failed to claim request', 'error');
+      console.error('Error sending offer:', error);
+      showNotification('Failed to send offer', 'error');
     }
+  };
+
+  const handleReviewOffers = (requestId) => {
+    setOffersForRequestId(requestId);
   };
 
   const handleMarkComplete = async (requestId, verificationData = null) => {
@@ -469,6 +483,19 @@ function App() {
       }
 
       await updateDoc(requestRef, updateData);
+      // Notify the owner to verify completion
+      const request = requests.find(req => req.id === requestId);
+      if (request?.createdByUid) {
+        await addDoc(collection(db, 'notifications'), {
+          userId: request.createdByUid,
+          type: 'verify_completion',
+          title: 'Verify completion requested',
+          message: `${user.email} marked "${request.title}" as complete. Please verify.`,
+          createdAt: serverTimestamp(),
+          read: false,
+          requestId
+        });
+      }
       showNotification('Marked as complete! Waiting for resident verification.');
     } catch (error) {
       showNotification('Error completing request. Please try again.', 'error');
@@ -494,6 +521,19 @@ function App() {
             at: new Date().toISOString()
           })
         });
+
+        // Notify the volunteer that completion was verified
+        if (request?.claimedByUid) {
+          await addDoc(collection(db, 'notifications'), {
+            userId: request.claimedByUid,
+            type: 'request_completed',
+            title: 'Completion verified',
+            message: `Your help on "${request.title}" was verified as completed.`,
+            createdAt: serverTimestamp(),
+            read: false,
+            requestId
+          });
+        }
 
         if (request?.claimedByUid) {
           try {
@@ -524,6 +564,18 @@ function App() {
             at: new Date().toISOString()
           })
         });
+        // Notify the volunteer that completion was rejected
+        if (request?.claimedByUid) {
+          await addDoc(collection(db, 'notifications'), {
+            userId: request.claimedByUid,
+            type: 'completion_rejected',
+            title: 'Completion not approved',
+            message: `Your completion for "${request.title}" was not approved. Please follow up in chat.`,
+            createdAt: serverTimestamp(),
+            read: false,
+            requestId
+          });
+        }
         showNotification('Completion rejected. Request reopened.');
       }
     } catch (error) {
@@ -759,7 +811,7 @@ function App() {
                       )}
 
                       {viewMode === 'map' ? (
-                        <MapView requests={filteredRequests} onRequestClick={(_request) => {}} />
+                        <MapView requests={filteredRequests} onRequestClick={(request) => setSelectedRequest(request)} />
                       ) : (
                         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
                           {loading ? (
@@ -781,6 +833,7 @@ function App() {
                               onVolunteer={handleVolunteer}
                               onComplete={handleMarkComplete}
                               onVerifyCompletion={handleVerifyCompletion}
+                              onReviewOffers={handleReviewOffers}
                             />
                           ))}
                         </Box>
@@ -801,6 +854,20 @@ function App() {
               requestTitle={openChatRequest.title}
               otherUserId={openChatRequest.createdByUid}
               otherUserEmail={openChatRequest.createdBy || openChatRequest.createdByEmail}
+            />
+          )}
+
+          {selectedRequest && (
+            <RequestDetailModal
+              request={selectedRequest}
+              onClose={() => setSelectedRequest(null)}
+            />
+          )}
+
+          {offersForRequestId && (
+            <RequestOffersModal
+              requestId={offersForRequestId}
+              onClose={() => setOffersForRequestId(null)}
             />
           )}
 
