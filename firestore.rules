@@ -170,6 +170,12 @@ service cloud.firestore {
             notifRequestClaimerUid() == request.auth.uid ||
             isAdminOfCommunity(notifRequestCommunityId())
           )
+        ) ||
+        (
+          notifRequestId() != null &&
+          request.resource.data.type == 'new_offer' &&
+          isMemberOfCommunity(notifRequestCommunityId()) &&
+          request.resource.data.userId == notifRequestOwnerUid()
         )
       );
 

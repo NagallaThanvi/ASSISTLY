@@ -419,7 +419,6 @@ function App() {
         return;
       }
 
-      // Prevent duplicate pending offer from the same user (fallback if index missing)
       let existingSnap;
       try {
         existingSnap = await getDocs(
@@ -455,7 +454,6 @@ function App() {
         status: 'pending'
       });
 
-      // Notify the request owner (best effort; don't block offer on rules)
       try {
         await addDoc(collection(db, 'notifications'), {
           userId: request.createdByUid,
