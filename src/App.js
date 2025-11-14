@@ -102,7 +102,7 @@ function App() {
           // Use slightly darker, desaturated primaries in dark mode to reduce
           // perceived brightness and glare for users.
           primary: {
-            main: darkMode ? COLORS.primary[700] : COLORS.primary[600],
+            main: darkMode ? COLORS.primary[400] : COLORS.primary[600],
             light: COLORS.primary[400],
             dark: COLORS.primary[800],
             contrastText: darkMode ? '#e6e6e6' : '#ffffff',
@@ -658,7 +658,7 @@ function App() {
                             transition: 'all 0.3s ease',
                             '&.Mui-selected': {
                               bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.95)' : theme.palette.primary.main,
-                              color: theme.palette.mode === 'dark' ? 'primary.main' : theme.palette.primary.contrastText,
+                              color: theme.palette.mode === 'dark' ? theme.palette.primary.dark : theme.palette.primary.contrastText,
                               '&:hover': { bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,1)' : theme.palette.primary.dark },
                             },
                             '&:hover': { bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.25)' : alpha(theme.palette.primary.main, 0.16) },
