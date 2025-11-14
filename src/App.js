@@ -419,8 +419,30 @@ function App() {
         return;
       }
 
-      // Prevent duplicate pending offer from the same user
-      const existingSnap = await getDocs(query(collection(db, 'requests', requestId, 'offers'), where('userId', '==', user.uid), where('status', '==', 'pending')));
+      // Prevent duplicate pending offer from the same user (fallback if index missing)
+      let existingSnap;
+      try {
+        existingSnap = await getDocs(
+          query(
+            collection(db, 'requests', requestId, 'offers'),
+            where('userId', '==', user.uid),
+            where('status', '==', 'pending')
+          )
+        );
+      } catch (_indexErr) {
+        const byUser = await getDocs(
+          query(
+            collection(db, 'requests', requestId, 'offers'),
+            where('userId', '==', user.uid)
+          )
+        );
+        const hasPending = byUser.docs.some(d => (d.data()?.status || 'pending') === 'pending');
+        if (hasPending) {
+          showNotification('You already sent an offer for this request', 'info');
+          return;
+        }
+        existingSnap = { empty: true };
+      }
       if (!existingSnap.empty) {
         showNotification('You already sent an offer for this request', 'info');
         return;
@@ -433,16 +455,20 @@ function App() {
         status: 'pending'
       });
 
-      // Notify the request owner
-      await addDoc(collection(db, 'notifications'), {
-        userId: request.createdByUid,
-        type: 'new_offer',
-        title: 'New offer received',
-        message: `${user.email} offered help on "${request.title}"`,
-        createdAt: serverTimestamp(),
-        read: false,
-        requestId: requestId
-      });
+      // Notify the request owner (best effort; don't block offer on rules)
+      try {
+        await addDoc(collection(db, 'notifications'), {
+          userId: request.createdByUid,
+          type: 'new_offer',
+          title: 'New offer received',
+          message: `${user.email} offered help on "${request.title}"`,
+          createdAt: serverTimestamp(),
+          read: false,
+          requestId: requestId
+        });
+      } catch (notifyErr) {
+        console.warn('Notification creation failed:', notifyErr);
+      }
 
       showNotification('Offer sent to the requester');
     } catch (error) {
