@@ -642,26 +642,28 @@ function App() {
                         exclusive
                         onChange={handleModeChange}
                         size="small"
-                        sx={{
-                          bgcolor: 'rgba(255,255,255,0.15)',
+                        sx={(theme) => ({
+                          bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.12)' : alpha(theme.palette.primary.main, 0.08),
                           borderRadius: 2,
                           backdropFilter: 'blur(10px)',
-                          border: '1px solid rgba(255,255,255,0.2)',
+                          border: theme.palette.mode === 'dark'
+                            ? '1px solid rgba(255,255,255,0.2)'
+                            : `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                           '& .MuiToggleButton-root': {
-                            color: 'rgba(255,255,255,0.8)',
+                            color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.85)' : theme.palette.primary.main,
                             border: 'none',
                             px: 2.5,
                             py: 0.75,
                             fontWeight: 600,
                             transition: 'all 0.3s ease',
                             '&.Mui-selected': {
-                              bgcolor: 'rgba(255,255,255,0.95)',
-                              color: 'primary.main',
-                              '&:hover': { bgcolor: 'rgba(255,255,255,1)' },
+                              bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.95)' : theme.palette.primary.main,
+                              color: theme.palette.mode === 'dark' ? 'primary.main' : theme.palette.primary.contrastText,
+                              '&:hover': { bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,1)' : theme.palette.primary.dark },
                             },
-                            '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
+                            '&:hover': { bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.25)' : alpha(theme.palette.primary.main, 0.16) },
                           },
-                        }}
+                        })}
                       >
                         <ToggleButton value="resident">
                           <HomeIcon sx={{ mr: 0.5, fontSize: 20 }} />

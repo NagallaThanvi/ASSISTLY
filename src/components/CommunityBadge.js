@@ -4,6 +4,7 @@ import {
   Tooltip,
   CircularProgress
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   LocationCity as CityIcon
 } from '@mui/icons-material';
@@ -36,7 +37,7 @@ const CommunityBadge = () => {
   }, [communityId]);
 
   if (loading) {
-    return <CircularProgress size={20} sx={{ color: 'white' }} />;
+    return <CircularProgress size={20} sx={(theme) => ({ color: theme.palette.mode === 'dark' ? 'white' : theme.palette.primary.main })} />;
   }
 
   if (!community) {
@@ -49,17 +50,17 @@ const CommunityBadge = () => {
         icon={<CityIcon />}
         label={community.name}
         size="small"
-        sx={{
-          bgcolor: 'rgba(255,255,255,0.2)',
-          color: 'white',
+        sx={(theme) => ({
+          bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.2)' : alpha(theme.palette.primary.main, 0.12),
+          color: theme.palette.mode === 'dark' ? 'white' : theme.palette.primary.main,
           fontWeight: 600,
           '& .MuiChip-icon': {
-            color: 'white'
+            color: theme.palette.mode === 'dark' ? 'white' : theme.palette.primary.main
           },
           '&:hover': {
-            bgcolor: 'rgba(255,255,255,0.3)'
+            bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.3)' : alpha(theme.palette.primary.main, 0.2)
           }
-        }}
+        })}
       />
     </Tooltip>
   );
